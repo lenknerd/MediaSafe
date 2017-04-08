@@ -30,7 +30,7 @@ module MediaSafe
 
 	# This function gets md5sum on a file (uses different command-line calls depending on OS)
 	# Uses md5 checksum algorith
-	def getMD5(fPath)
+	def MediaSafe.getMD5(fPath)
 		if(OS.windows?)
 			certUtilOutput = `certUtil -hashfile #{fPath} MD5`
 			# Output has for such as follows; need to split out just 2nd line, no spaces
@@ -38,7 +38,7 @@ module MediaSafe
 			# > 08 da 29 da 6c 92 c2 88 7d 02 5c 55 fc af 69 21
 			# > CertUtil: -hashfile command completed successfully.
 			return certUtilOutput.split("\n")[1].gsub(/\s+/, "")
-		else if(OS.linux?)
+		elsif(OS.linux?)
 			md5Output = `md5sum #{fPath}`
 			# Output has this form (see below); need to just parse out first part, data
 			# > 08da29da6c92c2887d025c55fcaf6921  ./InstallerTest_TestApp1-Installer_build.log
