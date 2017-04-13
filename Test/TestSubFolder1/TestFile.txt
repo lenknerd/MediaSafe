@@ -1,0 +1,3 @@
+This file is only here to give the MediaSafe test modules something to look at.
+
+This file is in a subfolder.

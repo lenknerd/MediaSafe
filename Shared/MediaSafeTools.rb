@@ -60,14 +60,27 @@ module MediaSafe
 		fPathStd = fPath.gsub(/^\.\//,'').gsub(/^\.\\/,'')
 
 		# If fPath is a file, that constitutes our list
-		if(File.directory?(fPathStd))
+		if(File.file?(fPathStd))
 			fList = [fPath]
 		else
 			# Otherwise it's a folder, list all files recursively inside it
-			fList = Dir.glob(fpath + '**/*')
+			fList = Dir.glob(fPathStd + '**/*')
+			# Remove anything that is itself a folder
+			fList.reject! { |x| File.directory?(x) }
 		end
+
+		# For each file, get it's size, md5sum, etc.
+		infoList = fList.map { |f|
+			{
+				:filename => File.basename(f),
+				:path => f.gsub(File.basename(f),''), # Path not from whole root
+				:size => File.size(f),                # but just from start of 'f'
+				:checksum => MediaSafe.getMD5(f)
+			}
+		}
+
 		# Temporary for testing
-		return fList
+		return infoList
 	end
 
 end
