@@ -24,6 +24,29 @@ module OS
 	end
 end
 
+# An enum for file status on server
+module MFileStatus
+	UNKNOWN = 0 # Have not checked server for it yet
+	NOT_PRESENT = 1 # No file with that name
+	CONFLICT = 2 # Filename exists at same path, filename but different md5sum
+	SAFE = 3 # Same filename and md5sum already on server (note diff path is ok)
+	UNDEFINED = 4 # Error! If converting string to this enum, bad string
+	
+	STRLIST = ['UNKNOWN', 'NOT_PRESENT', 'CONFLICT', 'SAFE']
+
+	# Convert from string to MFileStatus enum
+	def MFileStatus.str(arg)
+		result = MFileStatus::STRLIST.index(arg)
+		if result.between?(0,2)
+			return result
+		else
+			puts 'Error! Unexpected string for MFileStatus!'
+			return MFileStatus::UNDEFINED
+		end
+	end
+end
+
+
 # Main utilities for my MediaSafe module
 module MediaSafe
 
