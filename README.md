@@ -27,9 +27,11 @@ Notify client of such files, ask whether want to overwrite or skip.
 1. Either filename doesn't exist at all, or same name but different path and md5sum
 Transfer it across, treat it as new.
 
-## Client Installation
+## Installation
 
-The installation relies on Ruby and the [rest-client](https://github.com/rest-client/rest-client) Ruby gem.
+Both client and server rely on Ruby.  I have the server on an Ubuntu OS, though it doesn't have to be, and I have both Windows and Linux clients.
+
+The client relies on the , where 
 
 ### Windows Client
 
@@ -37,7 +39,7 @@ If you don't already have Ruby, download the Ruby [Windows Installer](https://ru
 Any version should be okay but I used 2.2.6 (x64).
 During the installation wizard, check the boxes to add Ruby executables to PATH, and associate .rb files with this installation.
 
-Next, install the *rest-client* gem by following these steps;
+Next, install the [rest-client](https://github.com/rest-client/rest-client) Ruby gem by following these steps;
 
 * In the Start menu, run the "Start Command Prompt With Ruby" application
 * In the command promp that comes up, type
@@ -49,4 +51,14 @@ Next, install the *rest-client* gem by following these steps;
 Install ruby and the rest-client gem via
 
 	sudo apt install ruby
+	gem install rest-client
+
+### Linux Server
+
+The server uses [Sinatra](http://www.sinatrarb.com/) for the simple web API and uses [Minitest](http://www.rubydoc.info/gems/minitest/) with [Rake](http://rake.rubyforge.org/) for testing.
+
+After installing ruby as on the client,
+
+	sudo gem install rake
+	gem install minitest
 	gem install sinatra
