@@ -17,15 +17,36 @@ The actual transfer is done by a simple scp.  But before transferring, it md5sum
 Then the server responds to say which files are already there and whether modifications exist.
 Files may be in one of five states;
 
-1. Filename and path already exists on server and has same md5sum as client version.
+1. Filename already exists on server and has same md5sum as client version.
 In this case, do nothing with it.
-2. Filename exists at different path but same md5sum on server.
-Here also do nothing, you already backed it up but put it at a different relative path.
-3. Filename exists at same path and filename but different md5sum.
+
+1. Filename exists at same path and filename but different md5sum.
 In this case you seem to have a new version of the file.
 Notify client of such files, ask whether want to overwrite or skip.
-4. Filename exists at different path but with different md5sum.
-Transfer it across, treat it as new.
-5. Filename does not exist.
-Transfer across, treat as new.
 
+1. Either filename doesn't exist at all, or same name but different path and md5sum
+Transfer it across, treat it as new.
+
+## Client Installation
+
+The installation relies on Ruby and the [rest-client](https://github.com/rest-client/rest-client) Ruby gem.
+
+### Windows Client
+
+If you don't already have Ruby, download the Ruby [Windows Installer](https://rubyinstaller.org/) and run it.
+Any version should be okay but I used 2.2.6 (x64).
+During the installation wizard, check the boxes to add Ruby executables to PATH, and associate .rb files with this installation.
+
+Next, install the *rest-client* gem by following these steps;
+
+* In the Start menu, run the "Start Command Prompt With Ruby" application
+* In the command promp that comes up, type
+
+	gem install rest-client
+
+### Linux Client
+
+Install ruby and the rest-client gem via
+
+	sudo apt install ruby
+	gem install sinatra

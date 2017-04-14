@@ -79,7 +79,6 @@ module MediaSafe
 			}
 		}
 
-		# Temporary for testing
 		return infoList
 	end
 
