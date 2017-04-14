@@ -9,15 +9,27 @@ require 'minitest/autorun'
 
 # Just tests the enum for various backed-up-ness statuses possible
 class TestMFileStatus < Minitest::Test
-	def test_strs
-		vals = [MFileStatus.str('UNKNOWN'),
-			MFileStatus.str('NOT_PRESENT'),
-			MFileStatus.str('CONFLICT'),
-			MFileStatus.str('SAFE'),
-			MFileStatus.str('23i4uhtojdfg  ')
+	def setup
+		@strvals = [
+			'UNKNOWN',
+			'NOT_PRESENT',
+			'CONFLICT',
+			'SAFE',
+			' 2oi3tygod$$ fhgb'
 		]
-		assert_equal [0,1,2,3,4], vals
+		@intvals = [0,1,2,3,4]
 	end
+
+	def test_strs
+		int_vals_calculated = @strvals.map { |x| MFileStatus.fr_str(x) }
+		assert_equal int_vals_calculated, @intvals
+	end
+
+	def test_ints
+		str_vals_calculated = @intvals.map { |x| MFileStatus.to_str(x) }
+		assert_equal str_vals_calculated, @strvals[0..-2] + ['UNDEFINED']
+	end
+
 end
 
 # Bulk of testing here - all the shared utilities

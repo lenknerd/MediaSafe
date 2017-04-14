@@ -35,12 +35,24 @@ module MFileStatus
 	STRLIST = ['UNKNOWN', 'NOT_PRESENT', 'CONFLICT', 'SAFE']
 
 	# Convert from string to MFileStatus enum
-	def MFileStatus.str(arg)
+	def MFileStatus.fr_str(arg)
 		result = MFileStatus::STRLIST.index(arg)
 		if result == nil
 			# Didn't find in possible array of things
 			puts 'Error! Unexpected string for MFileStatus!'
 			return MFileStatus::UNDEFINED
+		else
+			return result
+		end
+	end
+
+	# Convert from MFileStatus enum to string
+	def MFileStatus.to_str(arg)
+		result = MFileStatus::STRLIST[arg]
+		if result == nil
+			# Bad number passed in, out of range
+			puts 'Error! Unexpected value ' + arg.to_s + ' to MFileStatus.to_str.'
+			return 'UNDEFINED'
 		else
 			return result
 		end

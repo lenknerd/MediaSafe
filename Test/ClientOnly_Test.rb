@@ -7,28 +7,27 @@ require 'minitest/autorun'
 
 
 class TestMFileAction < Minitest::Test
-	def test_strs
-		vals = [
-			MFileAction.str('UNDECIDED'),
-			MFileAction.str('SENT_KEPT'),
-			MFileAction.str('SENT_DELD'),
-			MFileAction.str('SKIP_KEPT'),
-			MFileAction.str('SKIP_DELD'),
-			MFileAction.str('akjkj2b4tjjbetk')
+	def setup
+		@strvals = [
+			'UNDECIDED',
+			'SENT_KEPT',
+			'SENT_DELD',
+			'SKIP_KEPT',
+			'SKIP_DELD',
+			'akjkj2b4tjjbetk'
 		]
-		assert_equal vals, [0,1,2,3,4,5]
+		@intvals = [0,1,2,3,4,5]
+	end
+
+	def test_strs
+		int_vals_calculated = @strvals.map { |x| MFileAction.fr_str(x) }
+		assert_equal int_vals_calculated, @intvals
+	end
+
+	def test_ints
+		str_vals_calculated = @intvals.map { |x| MFileAction.to_str(x) }
+		assert_equal str_vals_calculated, @strvals[0..-2] + ['UNDEFINED']
 	end
 end
 
-
-
-
-
-
-puts 'Lets try getting info on "./Test/TestDataFolder" path;'
-res1 = MediaSafe.getFileInfo('./Test/TestDataFolder')
-print res1
-puts "\n"
-
-puts 'Now test my MFile Status enum class...'
 

@@ -18,12 +18,24 @@ module MFileAction
 	STRLIST = ['UNDECIDED', 'SENT_KEPT', 'SENT_DELD', 'SKIP_KEPT', 'SKIP_DELD']
 
 	# Convert from string to MFileAction enum
-	def MFileAction.str(arg)
+	def MFileAction.fr_str(arg)
 		result = MFileAction::STRLIST.index(arg)
 		if result == nil
 			# Didn't find in possible array of things
 			puts 'Error! Unexpected string for MFileAction!'
 			return MFileAction::UNDEFINED
+		else
+			return result
+		end
+	end
+
+	# Convert from MFileAction enum to string
+	def MFileAction.to_str(arg)
+		result = MFileAction::STRLIST[arg]
+		if result == nil
+			# Bad number passed in, out of range
+			puts 'Error! Unexpected value ' + arg.to_s + ' to MFileAction.to_str.'
+			return 'UNDEFINED'
 		else
 			return result
 		end
@@ -40,13 +52,44 @@ class MediaBackup
 	def init(args)
 		@infoList = []
 		if(args.key?(:saved))
-			# Load from the saved CSV
-		elsif(args.key(:path))
+			# Load from the saved TSV
+			loadFromTSV(args[:saved])
+		elsif(args.key(:generate))
 			# Generate from directory argument
+			@infoList = MediaSafe.getFileInfo(args[:generate])
+			@infoList.map { |x| MediaBackup.addStatusAction(x) }
+
+			# If that was an absolute path, then nothing's unspoken...
+			# Should not be the usual way to use this, but can allow it
+			if(args[:generate][0] == '/' || args[:generate][0] == '\\')
+				@unspokenBasePath = ''
+			else
+				# More commonly, this should be run from somewhere and the
+				# path in :generate should be relative, so can echo just the
+				# relative paths into the backup area... but record pwd fyi
+				@unspokenBasePath = Dir.pwd
+			end
 		else
 			# Rethink error handling later?
-			puts 'Unexpected arguments to MediaBackup creator.'
+			puts 'Error! MediaBackup requires :saved or :generate in init.'
 		end
+	end
+
+	# Save a MediaBackup session status to tsv table for load later, or view
+	def saveToTSV(tsvPath)
+		open(tsvPath, 'w') { |f|
+			f.puts @unspokenBasePath
+			@infoList.each { |el|
+				f.puts [
+					MFileStatus.to_str(el[:status]),
+					MFileAction.to_str(el[:action]),
+					el[:filename],
+					el[:path],
+					el[:size].to_s,
+					el[:checksum]
+				].join("\t")
+			}
+		}
 	end
 
 	private
@@ -60,8 +103,8 @@ class MediaBackup
 				while(line = f.gets) != nil
 					lineEls = line.split("\t")
 					@infoList.push({
-						:status => MFileStatus.str(lineEls[0]),
-						:action => MFileAction.str(lineEls[1]),
+						:status => MFileStatus.fr_str(lineEls[0]),
+						:action => MFileAction.fr_str(lineEls[1]),
 						:filename => lineEls[2],
 						:path => lineEls[3],
 						:size => lineEls[4].to_i,
@@ -69,6 +112,12 @@ class MediaBackup
 					})
 				end
 			end
+		end
+
+		# Set up a new FileList item with unknown status, undecided action
+		def self.addStatusAction(fileInfo)
+			fileInfo[:status] = MFileStatus::UNKNOWN
+			fileInfo[:action] = MFileAction::UNDECIDED 
 		end
 
 	# End private section of class
