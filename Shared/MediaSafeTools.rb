@@ -37,11 +37,12 @@ module MFileStatus
 	# Convert from string to MFileStatus enum
 	def MFileStatus.str(arg)
 		result = MFileStatus::STRLIST.index(arg)
-		if result.between?(0,2)
-			return result
-		else
+		if result == nil
+			# Didn't find in possible array of things
 			puts 'Error! Unexpected string for MFileStatus!'
 			return MFileStatus::UNDEFINED
+		else
+			return result
 		end
 	end
 end

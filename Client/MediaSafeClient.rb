@@ -20,11 +20,12 @@ module MFileAction
 	# Convert from string to MFileAction enum
 	def MFileAction.str(arg)
 		result = MFileAction::STRLIST.index(arg)
-		if result.between?(0,4)
-			return result
-		else
+		if result == nil
+			# Didn't find in possible array of things
 			puts 'Error! Unexpected string for MFileAction!'
 			return MFileAction::UNDEFINED
+		else
+			return result
 		end
 	end
 end
