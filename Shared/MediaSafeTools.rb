@@ -93,14 +93,18 @@ module MediaSafe
 	#  :checksum - md5 checksum result, as string (no whitespace)
 	def MediaSafe.getFileInfo(fPath)
 		# Cut off a "./" or "./" if that is at the beginning of the path
-		fPathStd = fPath.gsub(/^\.\//,'').gsub(/^\.\\/,'')
+		fPathTmp = fPath.gsub(/^\.\//,'').gsub(/^\.\\/,'')
+		# And cut off a "\" or "/" if that ends the path
+		fPathTmp2 = fPathTmp.gsub(/\\$/,'').gsub(/\/$/,'')
+		# And replace any multiple /// or \\ etc.
+		fPathStd = fPathTmp2.gsub(/([\\\/])\1+/,"\\1")
 
 		# If fPath is a file, that constitutes our list
 		if(File.file?(fPathStd))
 			fList = [fPath]
 		else
 			# Otherwise it's a folder, list all files recursively inside it
-			fList = Dir.glob(fPathStd + '**/*')
+			fList = Dir.glob(fPathStd + '/**/*')
 			# Remove anything that is itself a folder
 			fList.reject! { |x| File.directory?(x) }
 		end

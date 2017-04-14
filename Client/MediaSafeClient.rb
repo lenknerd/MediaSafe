@@ -47,38 +47,30 @@ end
 # to back up, or from a previous backup info table (tab-separated for easy
 # human-readability). Then can do the actual transfer via calls to server
 class MediaBackup
-	attr_reader :infoList, :unspokenBasePath
+	attr_accessor :infoList, # The real info on all the files
+		:basePathFYI # Just in case you need it, the abs path from which gen'd
 
-	def init(args)
+	def initialize(args = nil)
 		@infoList = []
-		if(args.key?(:saved))
+		if(args == nil)
+			# Rethink warning handling later? For now let create empty			
+		elsif(args.key?(:saved))
 			# Load from the saved TSV
 			loadFromTSV(args[:saved])
-		elsif(args.key(:generate))
+		elsif(args.key?(:generate))
 			# Generate from directory argument
 			@infoList = MediaSafe.getFileInfo(args[:generate])
 			@infoList.map { |x| MediaBackup.addStatusAction(x) }
-
-			# If that was an absolute path, then nothing's unspoken...
-			# Should not be the usual way to use this, but can allow it
-			if(args[:generate][0] == '/' || args[:generate][0] == '\\')
-				@unspokenBasePath = ''
-			else
-				# More commonly, this should be run from somewhere and the
-				# path in :generate should be relative, so can echo just the
-				# relative paths into the backup area... but record pwd fyi
-				@unspokenBasePath = Dir.pwd
-			end
+			@basePathFYI = Dir.pwd
 		else
-			# Rethink error handling later?
-			puts 'Error! MediaBackup requires :saved or :generate in init.'
+			puts 'Error - something totally unexpected in MediaBackup.new args.'
 		end
 	end
 
 	# Save a MediaBackup session status to tsv table for load later, or view
 	def saveToTSV(tsvPath)
 		open(tsvPath, 'w') { |f|
-			f.puts @unspokenBasePath
+			f.puts @basePathFYI
 			@infoList.each { |el|
 				f.puts [
 					MFileStatus.to_str(el[:status]),
@@ -97,8 +89,8 @@ class MediaBackup
 		# Load a MediaBackup session status from saved tsv
 		def loadFromTSV(tsvPath)
 			File.open(tsvPath, "r") do |f|
-				# First line in unspoken base path
-				@unspokenBasePath = f.readline
+				# First line is where we ran this from, don't really need...
+				@basePathFYI = f.readline
 				# Rest of lines are info list
 				while(line = f.gets) != nil
 					lineEls = line.split("\t")
