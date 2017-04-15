@@ -67,9 +67,6 @@ class TestMediaBackup < Minitest::Test
 	end
 
 	def test_list1
-		print @listing.basePathFYI
-		print @listing.infoList
-		print "\n"
 		assert_equal @listing, @expec_listing
 	end
 end

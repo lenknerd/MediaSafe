@@ -60,7 +60,7 @@ class MediaBackup
 		elsif(args.key?(:generate))
 			# Generate from directory argument
 			@infoList = MediaSafe.getFileInfo(args[:generate])
-			@infoList.map { |x| MediaBackup.addStatusAction(x) }
+			@infoList.map! { |x| MediaBackup.addStatusAction(x) }
 			@basePathFYI = Dir.pwd
 		else
 			puts 'Error - something totally unexpected in MediaBackup.new args.'
@@ -82,6 +82,34 @@ class MediaBackup
 				].join("\t")
 			}
 		}
+	end
+
+	# Comparator - mainly for testing
+	def ==(other_mb)
+		# Check that all base elements equal... first basePathFyi
+		if(@basePathFYI != other_mb.basePathFYI)
+			return false
+		end
+		# Then for this array, first ensure same size, then comp el-el
+		if(other_mb.infoList.length != @infoList.length)
+			return false
+		end
+		0.upto(@infoList.length-1) { |i|
+			if(@infoList[i][:status] != other_mb.infoList[i][:status])
+				return false
+			elsif(@infoList[i][:action] != other_mb.infoList[i][:action])
+				return false
+			elsif(@infoList[i][:filename] != other_mb.infoList[i][:filename])
+				return false
+			elsif(@infoList[i][:path] != other_mb.infoList[i][:path])
+				return false
+			elsif(@infoList[i][:size] != other_mb.infoList[i][:size])
+				return false
+			elsif(@infoList[i][:checksum] != other_mb.infoList[i][:checksum])
+				return false
+			end
+		}
+		return true
 	end
 
 	private
@@ -109,7 +137,8 @@ class MediaBackup
 		# Set up a new FileList item with unknown status, undecided action
 		def self.addStatusAction(fileInfo)
 			fileInfo[:status] = MFileStatus::UNKNOWN
-			fileInfo[:action] = MFileAction::UNDECIDED 
+			fileInfo[:action] = MFileAction::UNDECIDED
+			return fileInfo	
 		end
 
 	# End private section of class
