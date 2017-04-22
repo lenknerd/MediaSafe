@@ -22,8 +22,8 @@ class TestServerCalls < MiniTest::Test
 		assert(last_response.body.include?('Hooray'), 'Basic get test')
 	end
 
-	# Test checking status
-	def test_post1()
+	# Test checking status where everything is there
+	def test_allBackedUp()
 		# Create a MediaBackup to send over
 		b = MediaBackup.new({:generate => './Test/TestDataFolder'})
 		
@@ -36,10 +36,40 @@ class TestServerCalls < MiniTest::Test
 		server_b.from_json(last_response.body)
 		
 		server_b.infoList.each { |finfo|
-			assert_equal finfo[:status], MFileStatus::SAFE
+			assert_equal MFileStatus::SAFE, finfo[:status] 
 		}
-		assert_equal server_b.basePath, Dir.pwd
+		assert_equal Dir.pwd, server_b.basePath
 	end
 
+	# Test checking status when some things are NOT yet backed up
+	def test_oneYetToBackup()
+		# Add a file temporarily in the test data dir
+		newfilename = 'newfile.txt'
+		backupfolder = './Test/TestDataFolder/'
+		fnew = File.new(backupfolder + newfilename,'w')
+		fnew.puts 'This file is new and not yet be backed up.'
+		fnew.close
 
+		# Now create the "client" MediaBackup object
+		b = MediaBackup.new({:generate => backupfolder})
+
+		# Now remove the file so the server won't see it
+		File.delete(backupfolder + newfilename)
+
+		# And ask the server status on files
+		post '/query', b.to_json()
+
+		assert last_response.ok?
+		server_b = MediaBackup.new()
+		server_b.from_json(last_response.body)
+
+		# So, status-wise, all should be safe except the one not present	
+		server_b.infoList.each { |finfo|
+			if(finfo[:filename] == newfilename)
+				assert_equal MFileStatus::NOT_PRESENT, finfo[:status]
+			else
+				assert_equal MFileStatus::SAFE, finfo[:status]
+			end
+		}
+	end
 end
