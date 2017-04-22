@@ -37,10 +37,8 @@ Not trying to version things here.
 Transfer it across, treat it as new.
 
 
-## Installation
+## To-Do
 
-Both client and server rely on Ruby.
+* Finish up client side
 
-### Client
-
-
+* Add instructions on usage or installation to this readme
