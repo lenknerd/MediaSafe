@@ -59,15 +59,15 @@ class MediaSafeSinatra < Sinatra::Base
 		# Now, compare the two for various status possibilities
 		mb_clie.infoList.map! { |client_finfo|
 			client_finfo[:status] = getServerStatus(client_finfo,
-													server.infoList)
+												mb_serv.infoList)
 			client_finfo
 		}
 		
 		# Lastly put in the server's MediaBackup start path for response,
 		# client will SCP the appropriate stuff in
-		mb_clie.basePathFYI = mv_serv.basePathFYI
+		mb_clie.basePath = mb_serv.basePath
 
-		return mb_clie.to_json
+		return mb_clie.to_json()
 	end
 
 	# Simple get that we can call as basic test.

@@ -83,7 +83,7 @@ class TestMediaBackup < MiniTest::Test
 		@listing = MediaBackup.new({:generate => './Test/TestDataFolder'})
 
 		@expec_listing = MediaBackup.new()
-		@expec_listing.basePathFYI = '/home/david/SFiles/Projects/MediaSafe/Repo'
+		@expec_listing.basePath = '/home/david/SFiles/Projects/MediaSafe/Repo'
 		@expec_listing.infoList = [
 			{
 				:filename=>"AnotherTestFile.xyz",

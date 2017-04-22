@@ -166,7 +166,7 @@ end
 # human-readability). Then can do the actual transfer via calls to server
 class MediaBackup
 	attr_accessor :infoList, # The real info on all the files
-		:basePathFYI # Just in case you need it, the abs path from which gen'd
+		:basePath # Just in case you need it, the abs path from which gen'd
 
 	def initialize(args = nil)
 		@infoList = []
@@ -179,7 +179,7 @@ class MediaBackup
 			# Generate from directory argument
 			@infoList = MediaSafe.getFileInfo(args[:generate])
 			@infoList.map! { |x| MediaBackup.addStatusAction(x) }
-			@basePathFYI = Dir.pwd
+			@basePath = Dir.pwd
 		else
 			puts 'Error - something totally unexpected in MediaBackup.new args.'
 		end
@@ -188,7 +188,7 @@ class MediaBackup
 	# Save a MediaBackup session status to tsv table for load later, or view
 	def saveToTSV(tsvPath)
 		open(tsvPath, 'w') { |f|
-			f.puts @basePathFYI
+			f.puts @basePath
 			@infoList.each { |el|
 				f.puts [
 					MFileStatus.to_str(el[:status]),
@@ -205,7 +205,7 @@ class MediaBackup
 	# Comparator - mainly for testing
 	def ==(other_mb)
 		# Check that all base elements equal... first basePathFyi
-		if(@basePathFYI != other_mb.basePathFYI)
+		if(@basePath != other_mb.basePath)
 			return false
 		end
 		# Then for this array, first ensure same size, then comp el-el
@@ -234,7 +234,7 @@ class MediaBackup
 	def to_json()
 		# Note, the to_json handles turning ":path =>" to string key 'path'
 		return {
-			'basePathFYI' => @basePathFYI,
+			'basePath' => @basePath,
 			'infoList' => @infoList
 		}.to_json
 	end
@@ -242,7 +242,7 @@ class MediaBackup
 	# Convert from JSON data into one of these objects
 	def from_json(json_data)
 		h_temp = JSON.parse(json_data)
-		@basePathFYI = h_temp['basePathFYI']
+		@basePath = h_temp['basePath']
 		@infoList = h_temp['infoList'].map { |fi|
 			{
 				:status => fi['status'],
@@ -261,7 +261,7 @@ class MediaBackup
 		def loadFromTSV(tsvPath)
 			File.open(tsvPath, "r") do |f|
 				# First line is where we ran this from, don't really need...
-				@basePathFYI = f.readline
+				@basePath = f.readline
 				# Rest of lines are info list
 				while(line = f.gets) != nil
 					lineEls = line.split("\t")
