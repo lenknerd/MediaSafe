@@ -3,8 +3,5 @@
 #
 # David Lenkner, 2017
 
-require 'minitest/autorun'
 
-
-
-
+# No tests here yet...

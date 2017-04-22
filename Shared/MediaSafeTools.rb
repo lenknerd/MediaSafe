@@ -4,7 +4,7 @@
 # David Lenkner, 2017
 
 
-# Checksums are used to determine file version, but to run that, we need to know OS...
+# Checksums are used to determine file version, but to run, we need OS...
 # Different checksum tools are available on Windows vs. Linux
 module OS
 	def OS.windows?
@@ -28,8 +28,8 @@ end
 module MFileStatus
 	UNKNOWN = 0 # Have not checked server for it yet
 	NOT_PRESENT = 1 # No file with that name
-	CONFLICT = 2 # Filename exists at same path, filename but different md5sum
-	SAFE = 3 # Same filename and md5sum already on server (note diff path is ok)
+	CONFLICT = 2 # Filename exists at same path, filename but diff md5sum
+	SAFE = 3 # Same filename and md5sum already on srvr (note diff path is ok)
 	UNDEFINED = 4 # Error! If converting string to this enum, bad string
 	
 	STRLIST = ['UNKNOWN', 'NOT_PRESENT', 'CONFLICT', 'SAFE']
@@ -39,7 +39,6 @@ module MFileStatus
 		result = MFileStatus::STRLIST.index(arg)
 		if result == nil
 			# Didn't find in possible array of things
-			puts 'Error! Unexpected string for MFileStatus!'
 			return MFileStatus::UNDEFINED
 		else
 			return result
@@ -51,7 +50,6 @@ module MFileStatus
 		result = MFileStatus::STRLIST[arg]
 		if result == nil
 			# Bad number passed in, out of range
-			puts 'Error! Unexpected value ' + arg.to_s + ' to MFileStatus.to_str.'
 			return 'UNDEFINED'
 		else
 			return result
@@ -63,33 +61,30 @@ end
 # Main utilities for my MediaSafe module
 module MediaSafe
 
-	# This function gets md5sum on a file (uses different command-line calls depending on OS)
+	# This function gets md5sum on a file (uses command-line call dep on OS)
 	# Uses md5 checksum algorith
 	def MediaSafe.getMD5(fPath)
 		if(OS.windows?)
 			certUtilOutput = `certUtil -hashfile #{fPath} MD5`
-			# Output has for such as follows; split out just 2nd line, no spaces
+			# Output such as follows; split out just 2nd line, no spaces
 			# > MD5 hash of file ./InstallerTest_TestApp1-Installer_build.log:
 			# > 08 da 29 da 6c 92 c2 88 7d 02 5c 55 fc af 69 21
 			# > CertUtil: -hashfile command completed successfully.
 			return certUtilOutput.split("\n")[1].gsub(/\s+/, "")
 		elsif(OS.linux?)
 			md5Output = `md5sum #{fPath}`
-			# Output has this form in linux; need to just parse out first part, data
+			# Output in linux; need to just parse out first part, data
 			# > 08da29da6c92c2887d025c55fcaf6921  ./InstallerTest_build.log
 			return md5Output.split(' ')[0].gsub(/\s+/, "")
 		else
-			puts 'Mac OS not supported yet.'
 			return '' # Rethink error handling here later
 		end
 	end
 
-	# This creates a hash of info from a single file to be backed up.  Info includes
+	# Create a hash of info from a single file to be backed up.  Info includes
 	#  :filename - just the filename, no path, no './'
-	#
 	#  :rel_path - relative path from place where backup script was run.
-	#   also will turn into relative path where stored, in relation to storage root
-	#
+	#              also will be rel path where stored, in rel to storage root
 	#  :checksum - md5 checksum result, as string (no whitespace)
 	def MediaSafe.getFileInfo(fPath)
 		# Cut off a "./" or "./" if that is at the beginning of the path
@@ -113,8 +108,8 @@ module MediaSafe
 		infoList = fList.map { |f|
 			{
 				:filename => File.basename(f),
-				:path => f.gsub(File.basename(f),''), # Path not from whole root
-				:size => File.size(f),                # but just from start of 'f'
+				:path => f.gsub(File.basename(f),''), # Path only
+				:size => File.size(f),                # but to start of 'f'
 				:checksum => MediaSafe.getMD5(f)
 			}
 		}
@@ -134,14 +129,19 @@ module MFileAction
 	SKIP_DELD = 4 # Skipped (presumably already on server) and deleted here
 	UNDEFINED = 5 # Error! If converting string to this enum, bad string
 
-	STRLIST = ['UNDECIDED', 'SENT_KEPT', 'SENT_DELD', 'SKIP_KEPT', 'SKIP_DELD']
+	STRLIST = [
+		'UNDECIDED',
+		'SENT_KEPT',
+		'SENT_DELD',
+		'SKIP_KEPT',
+		'SKIP_DELD'
+	]
 
 	# Convert from string to MFileAction enum
 	def MFileAction.fr_str(arg)
 		result = MFileAction::STRLIST.index(arg)
 		if result == nil
 			# Didn't find in possible array of things
-			puts 'Error! Unexpected string for MFileAction!'
 			return MFileAction::UNDEFINED
 		else
 			return result
@@ -153,7 +153,6 @@ module MFileAction
 		result = MFileAction::STRLIST[arg]
 		if result == nil
 			# Bad number passed in, out of range
-			puts 'Error! Unexpected value ' + arg.to_s + ' to MFileAction.to_str.'
 			return 'UNDEFINED'
 		else
 			return result
@@ -233,7 +232,7 @@ class MediaBackup
 
 	# Convert to a plain ol' hash then make to JSON
 	def to_json()
-		# Note, the to_json handles turning ":path =>" to string key 'path' =>
+		# Note, the to_json handles turning ":path =>" to string key 'path'
 		return {
 			'basePathFYI' => @basePathFYI,
 			'infoList' => @infoList

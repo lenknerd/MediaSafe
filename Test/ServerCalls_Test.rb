@@ -3,32 +3,24 @@
 #
 # David Lenkner, 2017
 
-require 'rest-client'
+# require 'rest-client'
 
-class TestMFileStatus < Minitest::Test
+class TestServerCalls < MiniTest::Test 
 
-	def setup()
-		@test_port = 5678
-		# Start up a server in a separate thread
-		# Use different port (not default 4567) for test
-		MediaSafeSinatra.basedir = Dir.pwd
-		MediaSafeSinatra.run_in_bgthread(:port => @test_port, :server => 'webrick')
+	include Rack::Test::Methods
+
+	def app
+		MediaSafeSinatra
 	end
 
-	# Test that we say we're running
-	def test_assertRunning()
-		assert MediaSafeSinatra.am_i_running_bgthread()
-	end
+	MediaSafeSinatra.basedir = Dir.pwd
 
 	# Test that I can do a simple get to '/'
-	def test_basicGet()
-		addr = 'localhost:' + @test_port.to_s + '/'
-		curl_output = `curl #{addr}`
-		assert output.include? 'Hooray' # Expected get response...
+	def test_get()
+		get '/'
+		assert last_response.ok?
+		assert(last_response.body.include?('Hooray'), 'Basic get test')
 	end
 
-	def teardown()
-		# Abort the parallel thread running the server
-		MediaSafeSinatra.stop_running_bgthread()
-	end
+
 end

@@ -4,12 +4,11 @@
 #
 # David Lenkner, 2017
 
-require 'minitest/autorun'
-
 
 # Just tests the enum for various backed-up-ness statuses possible
-class TestMFileStatus < Minitest::Test
+class TestMFileStatus < MiniTest::Test
 	def setup
+		puts 'Running setup...'
 		@strvals = [
 			'UNKNOWN',
 			'NOT_PRESENT',
@@ -33,7 +32,7 @@ class TestMFileStatus < Minitest::Test
 end
 
 # Bulk of testing here - all the shared utilities
-class TestMediaSafeSharedUtils < Minitest::Test
+class TestMediaSafeSharedUtils < MiniTest::Test
 	def test_md5sum
 		filesToCheck = [
 		   './Test/TestDataFolder/TestFile.txt',
@@ -53,7 +52,7 @@ end
 
 
 # Just tests for the File Action Taken enum
-class TestMFileAction < Minitest::Test
+class TestMFileAction < MiniTest::Test
 	def setup
 		@strvals = [
 			'UNDECIDED',
@@ -79,7 +78,7 @@ end
 
 
 # Tests for the bulk of the client module
-class TestMediaBackup < Minitest::Test
+class TestMediaBackup < MiniTest::Test
 	def setup
 		@listing = MediaBackup.new({:generate => './Test/TestDataFolder'})
 

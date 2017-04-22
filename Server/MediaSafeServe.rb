@@ -5,13 +5,6 @@
 
 require 'sinatra/base'
 require 'json'
-require 'thread'
-
-
-# Note testing flag for whether this server instance is real or for
-# testing.  If defined and true, then test mode.  Undefined means
-# production mode.  Note, this is in Rakefile before including this.
-# $server_test_mode = true
 
 
 # Get status of client file on server given server info list
@@ -35,10 +28,20 @@ def getServerStatus(clientFileInfo, serverInfoList)
 	return MFileStatus::NOT_PRESENT
 end
 
+# Class for the Sinatra server of MediaSafe
 class MediaSafeSinatra < Sinatra::Base
 
 	@@basedir = '/SERVER_BASEDIR_NOT_SET/'
-	@@running_thread = nil
+
+	# Write accessor for class variable basedir
+	def self.basedir=(bd)
+		@@basedir = bd
+	end
+
+	# Read accessor for class variable basedir
+	def self.basedir()
+		return @@basedir
+	end
 
 	# The core request route - client asks for status of some files
 	post '/query' do
@@ -47,7 +50,7 @@ class MediaSafeSinatra < Sinatra::Base
 		# send it back as JSON response with object statuses.
 		
 		# First get the MediaBackup object for our storage folder
-		mb_serv = MediaBackup.new({:generate => @basedir})
+		mb_serv = MediaBackup.new({:generate => @@basedir})
 
 		# Now parse out the one sent from our client
 		mb_clie = MediaBackup.new()
@@ -73,38 +76,4 @@ class MediaSafeSinatra < Sinatra::Base
 		'Test call succeeded, media safe is running! Hooray!'
 	end
 
-	# Start the server in a parallel thread.
-	# Note, thanks to "Prikso NAI"'s answer in this thread;
-	# http://stackoverflow.com/questions/2589356/
-	# execute-code-once-sinatra-server-is-running
-	def self.run_in_bgthread(opts)
-		if(@@running_thread != nil)
-			puts 'Error!  Tried to start server while already running.'
-			return
-		end
-		# Start up the application in a separate thread
-		@@running_thread = Thread.new do
-			q = Queue.new
-			self.run!(opts) do |server|
-				# This is the callback function for when has started
-				q.push("server-started")
-			end
-			q.pop # This blocks until the run! callback runs
-		end
-	end
-
-	# Check if I am running
-	def self.am_i_running_bgthread()
-		return @@running_thread != nil
-	end
-
-	# Stop me if I am running
-	def self.stop_running_bgthread()
-		if(@@running_thread == nil)
-			puts 'Error!  Tried to stop server when not running anyway.'
-			return
-		end
-		@@running_thread.exit
-		@@running_thread = nil
-	end
 end
