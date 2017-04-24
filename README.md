@@ -15,6 +15,7 @@ Thanks to the creators of these packages I use here;
 * [Rake](http://rake.rubyforge.org/)
 * Client side requests are done using [rest-client](https://github.com/rest-client/rest-client)
 * [Slop](https://github.com/leejarvis/slop) for command-line argument parsing in client script
+* [rest-client](https://github.com/rest-client/rest-client) for querying server from client
 
 
 ## Features

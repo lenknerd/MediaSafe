@@ -7,10 +7,13 @@
 # David Lenkner, 2017
 
 require 'slop'
+require 'rest-client'
 
 
 # Client session class - does everything when .run called
 class MediaSafeClientSession
+	attr_accessor :cli_args, :server_url
+
 
 	# Set up
 	def initialize(app_argv)
@@ -37,6 +40,7 @@ class MediaSafeClientSession
 		cli_ops.string "-s","-status", "File or directory to get status on"
 		cli_ops.string "-o","-output", "Where to save status (_MediaSafeStat.tsv)"
 		cli_ops.string "-r","-run", "MediaSafe status file to execute"
+		cli_ops.string "-u","-url", "Address of MediaSafe server"
 
 		cli_ops
 	end
@@ -64,15 +68,35 @@ class MediaSafeClientSession
 			outputFileName = @cli_args[:output]
 		end
 		puts "Getting status of: #{@cli_args[:status]}"
-		puts "Writing to #{outputFileName}"
+		# See what files we're trying to back up and md5sum etc
+		mb = MediaBackup.new({:generate => @cli_args[:status]})
 
-		# ...
+		# Send that info to the server and parse response
+		if(@cli_args[:url] == nil)
+			@server_url = 'www.lenknerd.com:4567'
+		else
+			@server_url = @cli_args[:url]
+		end
+		response = RestClient.post 'http://localhost:4567/query',
+			mb.to_json(),
+			:content_type => :json,
+			:accept => :json
+		mb_serv = MediaBackup.new()
+		mb_serv.from_json(response.body)
+
+		puts "Writing to #{outputFileName}"
+		mb_serv.saveToTSV(outputFileName)
 	end
 
 	# Function to execute actions defined in file
 	def takeActionsIn()
+		# Read in the file
 		inFileName = @cli_args[:run]
 		puts "Running actions defined in #{inFileName}"
+		mb = MediaBackup.new({:saved => inFileName})
+	
+		# Execute actions via scp
+
 	end
 
 end
@@ -80,3 +104,4 @@ end
 # Instantiate app and run it
 app = MediaSafeClientSession.new(ARGV)
 app.run()
+puts 'Done executing MediaSafe run.'
