@@ -9,6 +9,7 @@
 require 'slop'
 require 'rest-client'
 require 'json'
+require 'net/sftp'
 
 # Work out relative path better here...
 require './Shared/MediaSafeTools.rb'
@@ -43,7 +44,9 @@ class MediaSafeClientSession
 		cli_ops.string "-s","-status", "File or directory to get status on"
 		cli_ops.string "-o","-output", "Where to save status (_MediaSafeStat.tsv)"
 		cli_ops.string "-r","-run", "MediaSafe status file to execute"
-		cli_ops.string "-u","-url", "Address of MediaSafe server"
+		cli_ops.string "-l","-url", "Location of MediaSafe server"
+		cli_ops.string "-u","-username", "Username of server user for scp"
+		cli_ops.string "-p","-password", "Password of server user for scp"
 
 		cli_ops
 	end
@@ -76,7 +79,7 @@ class MediaSafeClientSession
 
 		# Send that info to the server and parse response
 		if(@cli_args[:url] == nil)
-			@server_url = 'www.lenknerd.com:4567'
+			@server_url = 'www.lenknerd.com:4576'
 		else
 			@server_url = @cli_args[:url]
 		end
@@ -87,21 +90,99 @@ class MediaSafeClientSession
 		mb_serv = MediaBackup.new()
 		mb_serv.from_json(response.body)
 
+		# Decide on actions; later could involve user interaction
+		mb_serv.infoList.map! { |f|
+			if(f[:status] == MFileStatus::SAFE ||
+				f[:status] == MFileStatus::CONFLICT)
+				f[:action] = MFileAction::SKIP_KEPT
+			elsif(f[:status] == MFileStatus::NOT_PRESENT)
+				f[:action] = MFileAction::SENT_KEPT
+			else
+				f[:action] = MFileAction::UNDECIDED
+			end
+			f
+		}
+
 		puts "Writing to #{outputFileName}"
 		mb_serv.saveToTSV(outputFileName)
 	end
 
+	# Strip off folder names down to some level
+	def stripFolder(path_str, nd)
+		output = path_str + ''
+		0.upto(nd) { |i|
+			output = File.dirname(output)
+		}
+		return output
+	end
+
 	# Function to execute actions defined in file
 	def takeActionsIn()
+		# Check the username and password supplied
+		if(@cli_args[:username] == nil || @cli_args[:password] == nil)
+			puts '-u  <username> and -p <password> arguments required.'
+			exit
+		end
+
+		# Set server url of where to copy to
+		if(@cli_args[:url] == nil)
+			@server_url = 'www.lenknerd.com:4576'
+		else
+			@server_url = @cli_args[:url]
+		end
+
 		# Read in the file
 		inFileName = @cli_args[:run]
 		puts "Running actions defined in #{inFileName}"
 		mb = MediaBackup.new({:saved => inFileName})
-	
-		# Execute actions via scp
 
+
+		# Connect to server for SCP's
+		Kernel.suppress_warnings
+		Net::SFTP.start(@server_url, @cli_args[:username],
+					   :password => @cli_args[:password]) do |sftp1|
+
+			# Go through each file in the list
+			mb.infoList.each { |f1|
+				# Later also check for SENT_DELD - for now never deleting
+				if(f1[:action] == MFileAction::SENT_KEPT)
+					src_str = Dir.pwd + '/' + f1[:path] + f1[:filename]
+					dest_str = mb.basePath + '/' + f1[:path] + f1[:filename]
+
+					# Make the directory if not there, up to 4 levels
+					4.downto(0) { |i|
+						fold = stripFolder(dest_str, i)
+						begin
+							sftp1.mkdir!(fold)
+						rescue Net::SFTP::StatusException	
+							# No problem, folder probably wasn't already there
+						end
+					}
+
+					# This does the transfer and outputs progress on it (nice for big files)
+					puts "Transferring #{src_str} to #{dest_str}"
+					sftp1.upload!(src_str, dest_str)
+
+				else
+					puts 'Skipping...'
+				end
+			}
+		end
+		Kernel.allow_warnings
 	end
 
+end
+
+# Must be better workaround... don't like... but warnings from NET::SFTP annoying...
+$old_verbos = $VERBOSE
+module Kernel
+	def suppress_warnings
+		$VERBOSE = nil
+	end
+
+	def allow_warnings
+		$VERBOSE = $old_verbos
+	end
 end
 
 # Instantiate app and run it

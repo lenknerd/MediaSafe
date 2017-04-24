@@ -50,7 +50,7 @@ class MediaSafeSinatra < Sinatra::Base
 		# send it back as JSON response with object statuses.
 		
 		# First get the MediaBackup object for our storage folder
-		mb_serv = MediaBackup.new({:generate => @@basedir})
+		mb_serv = MediaBackup.new({:generate => @@basedir, :bp => @@basedir})
 
 		# Now parse out the one sent from our client
 		mb_clie = MediaBackup.new()

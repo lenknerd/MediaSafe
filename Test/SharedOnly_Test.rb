@@ -82,6 +82,10 @@ class TestMediaBackup < MiniTest::Test
 	def setup
 		@listing = MediaBackup.new({:generate => './Test/TestDataFolder'})
 
+		fullPathToServDir = Dir.pwd + '/Test/TestDataFolder'
+		@listing_wbase = MediaBackup.new({:generate => './Test/TestDataFolder',
+									:bp => fullPathToServDir})
+
 		@expec_listing = MediaBackup.new()
 		@expec_listing.basePath = '/home/david/SFiles/Projects/MediaSafe/Repo'
 		@expec_listing.infoList = [
@@ -110,11 +114,46 @@ class TestMediaBackup < MiniTest::Test
 				:action=>0
 			}
 		]
+
+		@expec_listing_wbase = MediaBackup.new()
+		@expec_listing_wbase.basePath = '/home/david/SFiles/Projects/MediaSafe/Repo/Test/TestDataFolder'
+		@expec_listing_wbase.infoList = [
+			{
+				:filename=>"AnotherTestFile.xyz",
+				:path=>"",
+				:size=>53,
+				:checksum=>"47ba5e3bc41c710bd25fc01be1a18e21",
+				:status=>0,
+				:action=>0
+			},
+			{
+				:filename=>"TestFile.txt",
+				:path=>"",
+				:size=>80,
+				:checksum=>"17467d85d61f5d4523fd1785680f32ef",
+				:status=>0,
+				:action=>0
+			},
+			{
+				:filename=>"TestFile.txt",
+				:path=>"TestSubFolder1/",
+				:size=>110,
+				:checksum=>"c8ea95565095d0453665eb6aecd152e2",
+				:status=>0,
+				:action=>0
+			}
+		]
+
 	end
 
 	# The two created in the setup should be equal
 	def test_list1
 		assert_equal @listing, @expec_listing
+	end
+
+	# Test the two created with base path specified
+	def test_list2
+		assert_equal @listing_wbase, @expec_listing_wbase
 	end
 
 	# Try writing to tsv and reading from that, check that equal

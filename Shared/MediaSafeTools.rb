@@ -83,21 +83,37 @@ module MediaSafe
 
 	# Info on a particular file in standard hash, f being file and folder path
 	# in format ./SomePathWhere/WillBeBackedup/Filename.txt
-	def MediaSafe.getInfoListItemFromF(f)
+	def MediaSafe.getInfoListItemFromF(f, baseD)
+		# Need to figure out path just from baseD up to file
+		# f may include relative path from Dir.pwd or may be all... so...
+		if(f[0] != '/' || f[0] != '\\') # Note this fails on ~ but whatever...
+			# if relative, add on pwd, compare to base path
+			fFull = Dir.pwd + '/' + f
+			relPathAndFile = fFull.gsub(baseD,'')
+		else
+			# if not relative, just go ahead and cut out baseD
+			relPathAndFile = fFull.gsub(baseD,'')
+		end
+		# Let's standardize that relPath shouldn't start with a '/' (or '\' win)
+		relPathAndFile.gsub!(/^\//,'')
+		relPathAndFile.gsub!(/^\\/,'')
+		# Then cut out the filename itself from that relative path and file for just path...
+		relPath = relPathAndFile.gsub(File.basename(f),'')	
+
 		return {
 			:filename => File.basename(f),
-			:path => f.gsub(File.basename(f),''), # Path only
-			:size => File.size(f),                # but to start of 'f'
+			:path => relPath, # Path from base dir to f #####
+			:size => File.size(f),
 			:checksum => MediaSafe.getMD5(f)
 		}
 	end
 
 	# Create a hash of info from a single file to be backed up.  Info includes
 	#  :filename - just the filename, no path, no './'
-	#  :rel_path - relative path from place where backup script was run.
+	#  :rel_path - relative path from place where backup script was run (baseDir arg)
 	#              also will be rel path where stored, in rel to storage root
 	#  :checksum - md5 checksum result, as string (no whitespace)
-	def MediaSafe.getFileInfo(fPath)
+	def MediaSafe.getFileInfo(fPath, baseD)
 		# Cut off a "./" or "./" if that is at the beginning of the path
 		fPathTmp = fPath.gsub(/^\.\//,'').gsub(/^\.\\/,'')
 		# And cut off a "\" or "/" if that ends the path
@@ -115,9 +131,9 @@ module MediaSafe
 			fList.reject! { |x| File.directory?(x) }
 		end
 
-		# For each file, get it's size, md5sum, etc.
+		# For each file, get it's size, md5sum, etc, figure out path relative to baseDir
 		infoList = fList.map { |f|
-			getInfoListItemFromF(f)
+			getInfoListItemFromF(f, baseD)
 		}
 
 		return infoList
@@ -182,10 +198,14 @@ class MediaBackup
 			# Load from the saved TSV
 			loadFromTSV(args[:saved])
 		elsif(args.key?(:generate))
-			# Generate from directory argument
-			@infoList = MediaSafe.getFileInfo(args[:generate])
-			@infoList.map! { |x| MediaBackup.addStatusAction(x) }
 			@basePath = Dir.pwd
+			if(args[:bp] != nil)
+				@basePath = args[:bp]
+			end
+			# Generate from directory argument
+			@infoList = MediaSafe.getFileInfo(args[:generate], @basePath)
+			@infoList.map! { |x| MediaBackup.addStatusAction(x) }
+			
 		else
 			puts 'Error - something totally unexpected in MediaBackup.new args.'
 		end
