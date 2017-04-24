@@ -46,15 +46,18 @@ class TestServerCalls < MiniTest::Test
 		# Add a file temporarily in the test data dir
 		newfilename = 'newfile.txt'
 		backupfolder = './Test/TestDataFolder/'
+		sleep 0.1
 		fnew = File.new(backupfolder + newfilename,'w')
 		fnew.puts 'This file is new and not yet be backed up.'
 		fnew.close
+		sleep 0.1
 
 		# Now create the "client" MediaBackup object
 		b = MediaBackup.new({:generate => backupfolder})
 
 		# Now remove the file so the server won't see it
 		File.delete(backupfolder + newfilename)
+		sleep 0.1
 
 		# And ask the server status on files
 		post '/query', b.to_json()

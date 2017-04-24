@@ -81,6 +81,17 @@ module MediaSafe
 		end
 	end
 
+	# Info on a particular file in standard hash, f being file and folder path
+	# in format ./SomePathWhere/WillBeBackedup/Filename.txt
+	def MediaSafe.getInfoListItemFromF(f)
+		return {
+			:filename => File.basename(f),
+			:path => f.gsub(File.basename(f),''), # Path only
+			:size => File.size(f),                # but to start of 'f'
+			:checksum => MediaSafe.getMD5(f)
+		}
+	end
+
 	# Create a hash of info from a single file to be backed up.  Info includes
 	#  :filename - just the filename, no path, no './'
 	#  :rel_path - relative path from place where backup script was run.
@@ -106,12 +117,7 @@ module MediaSafe
 
 		# For each file, get it's size, md5sum, etc.
 		infoList = fList.map { |f|
-			{
-				:filename => File.basename(f),
-				:path => f.gsub(File.basename(f),''), # Path only
-				:size => File.size(f),                # but to start of 'f'
-				:checksum => MediaSafe.getMD5(f)
-			}
+			getInfoListItemFromF(f)
 		}
 
 		return infoList
@@ -261,10 +267,10 @@ class MediaBackup
 		def loadFromTSV(tsvPath)
 			File.open(tsvPath, "r") do |f|
 				# First line is where we ran this from, don't really need...
-				@basePath = f.readline
+				@basePath = f.readline.strip
 				# Rest of lines are info list
 				while(line = f.gets) != nil
-					lineEls = line.split("\t")
+					lineEls = line.strip.split("\t")
 					@infoList.push({
 						:status => MFileStatus.fr_str(lineEls[0]),
 						:action => MFileAction.fr_str(lineEls[1]),

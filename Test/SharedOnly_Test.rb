@@ -112,8 +112,21 @@ class TestMediaBackup < MiniTest::Test
 		]
 	end
 
+	# The two created in the setup should be equal
 	def test_list1
 		assert_equal @listing, @expec_listing
+	end
+
+	# Try writing to tsv and reading from that, check that equal
+	def test_writeRead
+		temp_f = './Test/Temporary_Saved_MediaBackupForTest.tsv'
+		@listing.saveToTSV(temp_f)
+
+		readback_list = MediaBackup.new({:saved => temp_f})
+
+		assert_equal @listing, readback_list
+
+		File.delete(temp_f)
 	end
 end
 
