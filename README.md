@@ -37,8 +37,19 @@ Not trying to version things here.
 1. Either filename doesn't exist at all, or same name but different path and md5sum
 Transfer it across, treat it as new.
 
+## Running
 
-## To-Do
+For a simple local run test, go to the base directory of this repository, and run
+
+	rake run_server
+
+to start the server, then
+
+	./Client/MediaSafe.rb -s ./Test/TestDataFolder/ -u localhost:4567
+
+to query that server and get the status of the ./Test/TestDataFolder.
+
+## To Do
 
 * Finish up client side
 

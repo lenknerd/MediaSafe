@@ -8,7 +8,10 @@
 
 require 'slop'
 require 'rest-client'
+require 'json'
 
+# Work out relative path better here...
+require './Shared/MediaSafeTools.rb'
 
 # Client session class - does everything when .run called
 class MediaSafeClientSession
