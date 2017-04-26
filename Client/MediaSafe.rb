@@ -95,11 +95,11 @@ class MediaSafeClientSession
 
 		# Send that info to the server and parse response
 		if(@cli_args[:url] == nil)
-			@server_url = 'www.lenknerd.com:4576'
+			@server_url = 'www.lenknerd.com:5678'
 		else
 			@server_url = @cli_args[:url]
 		end
-		response = RestClient.post 'http://localhost:4567/query',
+		response = RestClient.post @server_url + '/query',
 			mb.to_json(),
 			:content_type => :json,
 			:accept => :json
