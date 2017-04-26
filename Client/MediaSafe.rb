@@ -95,7 +95,7 @@ class MediaSafeClientSession
 
 		# Send that info to the server and parse response
 		if(@cli_args[:url] == nil)
-			@server_url = 'www.lenknerd.com:5678'
+			@server_url = 'lenknerd.com:5673'
 		else
 			@server_url = @cli_args[:url]
 		end
