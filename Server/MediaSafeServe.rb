@@ -33,6 +33,8 @@ class MediaSafeSinatra < Sinatra::Base
 
 	@@basedir = '/SERVER_BASEDIR_NOT_SET/'
 
+	set :port, 5678 # My router doesn't allow default 4567 fwd...
+
 	# Write accessor for class variable basedir
 	def self.basedir=(bd)
 		@@basedir = bd

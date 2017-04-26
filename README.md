@@ -6,9 +6,9 @@ So could be media files, could be used in conjunction with Plex or other media s
 
 Also personal practice writing and testing web API's in Ruby with Sinatra.
 
-## Modules
+## Gems
 
-Thanks to the creators of these packages I use here;
+Thanks to the creators of these;
 
 * [Sinatra](http://www.sinatrarb.com/) for the simple web API
 * [Minitest](http://www.rubydoc.info/gems/minitest/) and [Rack](http://rack.github.io/) for testing
@@ -16,6 +16,8 @@ Thanks to the creators of these packages I use here;
 * Client side requests are done using [rest-client](https://github.com/rest-client/rest-client)
 * [Slop](https://github.com/leejarvis/slop) for command-line argument parsing in client script
 * [rest-client](https://github.com/rest-client/rest-client) for querying server from client
+* [net-sftp](https://github.com/net-ssh/net-sftp)
+* [json](https://rubygems.org/gems/json/versions/1.8.3)
 
 
 ## Features
@@ -41,7 +43,7 @@ Transfer it across, treat it as new.
 
 For a simple local run test, go to the base directory of this repository, and run
 
-	rake run_server
+	rake run_server &
 
 to start the server, then
 
@@ -59,17 +61,22 @@ Then do the actions summarized in that file via
 
 * Add instructions on usage or installation to this readme
 
-## Installation Note on NET-SCP Gem
+## Installation
 
-I was getting a warning from net-scp upon usage about a shadowed variable 'ch'.
+### Client
 
-	david@alfred:~/SFiles/Projects/MediaSafe/Repo/Client$ ./MediaSafe.rb -r ./st -u a -p a -l localhost
-	/var/lib/gems/2.3.0/gems/net-scp-1.2.1/lib/net/scp.rb:365: warning: shadowing outer local variable - ch
-	/var/lib/gems/2.3.0/gems/net-scp-1.2.1/lib/net/scp.rb:366: warning: shadowing outer local variable - ch
-	/var/lib/gems/2.3.0/gems/net-scp-1.2.1/lib/net/scp.rb:367: warning: shadowing outer local variable - ch
-	/var/lib/gems/2.3.0/gems/net-scp-1.2.1/lib/net/scp.rb:368: warning: shadowing outer local variable - ch
+For a Windows system, install Ruby, then install the dev kit (see DevKit-mingw64-64-4.7.2-20130224-1432-sfx.exe dev kit link at http://rubyinstaller.org/downloads/).
+Install instructions for the dev kit may be found [here](https://github.com/oneclick/rubyinstaller/wiki/Development-Kit).
+This is needed for the `json` gem.
 
-Couldn't find this variable anywhere in my code, grep'd for ch.  Must be conflict with other module...
-anyway I just changed ch to ch1 in that file location.
+Next install gems `net-sftp`, `json`, `rest-client`, and `slop`, in no particular order.
 
-Ah, never mind, sftp needed anywhere to mkdir... see [this](https://linuxconfig.org/how-to-setup-and-use-ftp-server-in-ubuntu-linux) for install.
+Then check out this Git repository somewhere on the client machine (could just grab the Shared and Client files, but might as well grab the whole thing).
+
+Lastly, to be able to run it easily with the "mesa" alias, add these lines to your ruby vars batch file, by default at the end of C:\Ruby22-x64\bin\setrbvars.bat
+
+	doskey mesa=ruby.exe <path-where-you-checked-out-repo>\Client\MediaSafe.rb
+
+for example, I have it as
+
+	doskey mesa=ruby.exe C:\Ruby22-x64\Custom\MediaSafe\Client\MediaSafe.rb
