@@ -142,7 +142,7 @@ class MediaSafeClientSession
 
 		# Set server url of where to copy to
 		if(@cli_args[:url] == nil)
-			@server_url = 'www.lenknerd.com:4576'
+			@server_url = 'www.lenknerd.com:5678'
 		else
 			@server_url = @cli_args[:url]
 		end
