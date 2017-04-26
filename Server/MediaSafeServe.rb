@@ -33,7 +33,12 @@ class MediaSafeSinatra < Sinatra::Base
 
 	@@basedir = '/SERVER_BASEDIR_NOT_SET/'
 
-	set :port, 5678 # My router doesn't allow default 4567 fwd...
+	set :port, 5673 # My router doesn't allow default 4567 fwd.. just picked unused nearby
+
+	# http://stackoverflow.com/questions/16832472/
+	# ruby-sinatra-webservice-running-on-localhost4567-but-not-on-ip
+	# Note, replace this with IP of machine or automatically get it...
+	set :bind, '192.168.1.6' # This seems to be required to run from outside
 
 	# Write accessor for class variable basedir
 	def self.basedir=(bd)
