@@ -12,7 +12,7 @@ require 'json'
 require 'net/sftp'
 
 # Might want to reconsider how to find this later...
-require File.dirname(__FILE__) + '../Shared/MediaSafeTools.rb'
+require File.dirname(__FILE__) + '/../Shared/MediaSafeTools.rb'
 
 # Client session class - does everything when .run called
 class MediaSafeClientSession

@@ -71,7 +71,7 @@ This is needed for the `json` gem.
 
 Next install gems `net-sftp`, `json`, `rest-client`, and `slop`, in no particular order.
 
-Then check out this Git repository somewhere on the client machine (could just grab the Shared and Client files, but might as well grab the whole thing).
+Then check out this Git repository somewhere on the client machine (could just grab the Shared and Client files, but might as well grab the whole thing and be able to easily pull updates).
 
 Lastly, to be able to run it easily with the "mesa" alias, add these lines to your ruby vars batch file, by default at the end of C:\Ruby22-x64\bin\setrbvars.bat
 
