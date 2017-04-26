@@ -65,7 +65,7 @@ module MediaSafe
 	# Uses md5 checksum algorith
 	def MediaSafe.getMD5(fPath)
 		if(OS.windows?)
-			certUtilOutput = `certUtil -hashfile #{fPath} MD5`
+			certUtilOutput = `certUtil -hashfile "#{fPath}" MD5`
 			# Output such as follows; split out just 2nd line, no spaces
 			# > MD5 hash of file ./InstallerTest_TestApp1-Installer_build.log:
 			# > 08 da 29 da 6c 92 c2 88 7d 02 5c 55 fc af 69 21
