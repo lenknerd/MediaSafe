@@ -9,7 +9,23 @@
 require 'slop'
 require 'rest-client'
 require 'json'
+
+# NET::SFTP causes some annoying warnings in new ruby versions...
+# should fix or just chuck it for better module, but for now hush it
+$old_verbos = $VERBOSE
+module Kernel
+	def suppress_warnings
+		$VERBOSE = nil
+	end
+
+	def allow_warnings
+		$VERBOSE = $old_verbos
+	end
+end
+
+Kernel.suppress_warnings
 require 'net/sftp'
+Kernel.allow_warnings
 
 # Might want to reconsider how to find this later...
 require File.dirname(__FILE__) + '/../Shared/MediaSafeTools.rb'
@@ -171,18 +187,6 @@ class MediaSafeClientSession
 		Kernel.allow_warnings
 	end
 
-end
-
-# Must be better workaround... don't like... but warnings from NET::SFTP annoying...
-$old_verbos = $VERBOSE
-module Kernel
-	def suppress_warnings
-		$VERBOSE = nil
-	end
-
-	def allow_warnings
-		$VERBOSE = $old_verbos
-	end
 end
 
 # Instantiate app and run it
