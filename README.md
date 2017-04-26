@@ -63,7 +63,7 @@ Then do the actions summarized in that file via
 
 ## Installation
 
-### Client
+### Windows Client
 
 For a Windows system, install Ruby, then install the dev kit (see DevKit-mingw64-64-4.7.2-20130224-1432-sfx.exe dev kit link at http://rubyinstaller.org/downloads/).
 Install instructions for the dev kit may be found [here](https://github.com/oneclick/rubyinstaller/wiki/Development-Kit).
@@ -75,8 +75,8 @@ Then check out this Git repository somewhere on the client machine (could just g
 
 Lastly, to be able to run it easily with the "mesa" alias, add these lines to your ruby vars batch file, by default at the end of C:\Ruby22-x64\bin\setrbvars.bat
 
-	doskey mesa=ruby.exe <path-where-you-checked-out-repo>\Client\MediaSafe.rb
+	doskey mesa=ruby.exe <path-where-you-checked-out-repo>\Client\MediaSafe.rb $*
 
 for example, I have it as
 
-	doskey mesa=ruby.exe C:\Ruby22-x64\Custom\MediaSafe\Client\MediaSafe.rb
+	doskey mesa=ruby.exe C:\Ruby22-x64\Custom\MediaSafe\Client\MediaSafe.rb $*
