@@ -62,7 +62,6 @@ class MediaSafeClientSession
 		cli_ops.string "-r","-run", "MediaSafe status file to execute"
 		cli_ops.string "-l","-url", "Location of MediaSafe server"
 		cli_ops.string "-u","-username", "Username of server user for scp"
-		cli_ops.string "-p","-password", "Password of server user for scp (note, better to leave off, will ask for entry)"
 
 		cli_ops
 	end
@@ -140,11 +139,6 @@ class MediaSafeClientSession
 			exit
 		end
 
-		# Ask for password entry in secure way
-		if(@cli_args[:password] == nil)
-			@cli_args[:password] = '' # SFTP will ask for pw if not right
-		end
-
 		# Set server url of where to copy to
 		if(@cli_args[:url] == nil)
 			@server_url = 'www.lenknerd.com'
@@ -158,10 +152,11 @@ class MediaSafeClientSession
 		mb = MediaBackup.new({:saved => inFileName})
 
 
-		# Connect to server for SCP's
+		# Connect to server for FTP's
 		Kernel.suppress_warnings
+		# Note, the empty password here will just cause it to ask for pw entry securely
 		Net::SFTP.start(@server_url, @cli_args[:username],
-					   :password => @cli_args[:password]) do |sftp1|
+					   :password => '') do |sftp1|
 
 			# Go through each file in the list
 			mb.infoList.each { |f1|
