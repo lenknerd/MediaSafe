@@ -15,7 +15,6 @@ Thanks to the creators of these;
 * [Rake](http://rake.rubyforge.org/)
 * Client side requests are done using [rest-client](https://github.com/rest-client/rest-client)
 * [Slop](https://github.com/leejarvis/slop) for command-line argument parsing in client script
-* [rest-client](https://github.com/rest-client/rest-client) for querying server from client
 * [net-sftp](https://github.com/net-ssh/net-sftp)
 * [json](https://rubygems.org/gems/json/versions/1.8.3)
 
@@ -39,28 +38,6 @@ Not trying to version things here.
 1. Either filename doesn't exist at all, or same name but different path and md5sum
 Transfer it across, treat it as new.
 
-## Running
-
-For a simple local run test, go to the base directory of this repository, and run
-
-	rake run_server &
-
-to start the server, then
-
-	./Client/MediaSafe.rb -s ./Test/TestDataFolder/ -l localhost:4567 -o statuses.tsv
-
-to query that server and get the status of the ./Test/TestDataFolder.
-That stores the results in statuses.tsv.
-Then do the actions summarized in that file via
-
-	./Client/MediaSafe.rb -r ./statuses.tsv -l localhost -u <username> -p <password>
-
-## To Do
-
-* Finish up client side
-
-* Add instructions on usage or installation to this readme
-
 ## Installation
 
 ### Windows Client
@@ -81,6 +58,46 @@ for example, I have it as
 
 	doskey mesa=ruby.exe C:\Ruby22-x64\Custom\MediaSafe\Client\MediaSafe.rb $*
 
+### Linux Client
+
+As in Windows, install Ruby, then install gems `net-sftp`, `json`, `rest-client`, and `slop`, in no particular order.
+
+If you already have a `.bash_aliases` file in your home directory, add this alias to it, or create that file and add this line;
+
+	alias mesa="~/SFiles/Projects/MediaSafe/Repo/Client/MediaSafe.rb"
+
 ### Server
 
+Install ruby, then check out the repository.  Install gems `rake`, `sinatra`, `MiniTest`, and `json`, and the developer kit (see above) if not installed already.
+
+In server and client files, modify the ports and URL's as needed (see where lenknerd.com is specified, and where 5673 is specified as the port).  Change this to your public URL and port forwarded for Sinatra, or else simply change it to localhost.
+
+Also in the Rakefile under the `run_server` task, change the base director where you would like to store all of the backed-up files.  This can be (for example) an external HD.
+
+Install ftp service on the server via
+
+	sudo apt-get install vsftpd
+
+Finally start the server by going to the base directory of the repository and running
+
 	nohup rake run_server &
+
+## Client-Side Usage
+
+To check the status of a particular folder and contents as to whether they are backed up, run
+
+	mesa -s ./FolderToBeChecked/
+
+That will create a status file in tab-separated format which can be viewed to see which items are already backed up.
+The default filename is `_MediaSafeStat.tsv`, but the -o option allows a custom name.
+To run the actions defined in that file, run
+
+	mesa -r ./_MediaSafeStat.tsv -u <username>
+
+This will then ask for the password for that user to write to the backup destination via sftp.
+
+## Testing
+
+To run the automated test suite via MiniTest, simple go to the base directory of this repository, and run
+
+	rake

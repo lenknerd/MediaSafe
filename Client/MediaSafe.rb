@@ -62,7 +62,7 @@ class MediaSafeClientSession
 		cli_ops.string "-r","-run", "MediaSafe status file to execute"
 		cli_ops.string "-l","-url", "Location of MediaSafe server"
 		cli_ops.string "-u","-username", "Username of server user for scp"
-		cli_ops.string "-p","-password", "Password of server user for scp"
+		cli_ops.string "-p","-password", "Password of server user for scp (note, better to leave off, will ask for entry)"
 
 		cli_ops
 	end
@@ -134,10 +134,15 @@ class MediaSafeClientSession
 
 	# Function to execute actions defined in file
 	def takeActionsIn()
-		# Check the username and password supplied
-		if(@cli_args[:username] == nil || @cli_args[:password] == nil)
-			puts '-u  <username> and -p <password> arguments required.'
+		# Check the username supplied
+		if(@cli_args[:username] == nil)
+			puts '-u  <username> argument required.'
 			exit
+		end
+
+		# Ask for password entry in secure way
+		if(@cli_args[:password] == nil)
+			@cli_args[:password] = '' # SFTP will ask for pw if not right
 		end
 
 		# Set server url of where to copy to
