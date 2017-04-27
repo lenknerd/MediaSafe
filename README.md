@@ -80,3 +80,7 @@ Lastly, to be able to run it easily with the "mesa" alias, add these lines to yo
 for example, I have it as
 
 	doskey mesa=ruby.exe C:\Ruby22-x64\Custom\MediaSafe\Client\MediaSafe.rb $*
+
+### Server
+
+	nohup rake run_server &

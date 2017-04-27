@@ -39,7 +39,7 @@ task :run_server => [:load_shared, :load_server] do
 	puts 'Running the server...'
 
 	# Change this if you want to server from different folder
-	backupDir = File.expand_path(File.dirname(__FILE__)) + '/Test/TestServerFolder'
+	backupDir = '/media/david/BUNSEN/mesa'
 
 	MediaSafeSinatra.basedir = backupDir
 	MediaSafeSinatra.run!

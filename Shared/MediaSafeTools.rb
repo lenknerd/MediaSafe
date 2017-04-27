@@ -72,7 +72,7 @@ module MediaSafe
 			# > CertUtil: -hashfile command completed successfully.
 			return certUtilOutput.split("\n")[1].gsub(/\s+/, "")
 		elsif(OS.linux?)
-			md5Output = `md5sum #{fPath}`
+			md5Output = `md5sum "#{fPath}"`
 			# Output in linux; need to just parse out first part, data
 			# > 08da29da6c92c2887d025c55fcaf6921  ./InstallerTest_build.log
 			return md5Output.split(' ')[0].gsub(/\s+/, "")
