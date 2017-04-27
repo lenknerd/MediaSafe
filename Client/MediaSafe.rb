@@ -165,13 +165,13 @@ class MediaSafeClientSession
 					src_str = Dir.pwd + '/' + f1[:path] + f1[:filename]
 					dest_str = mb.basePath + '/' + f1[:path] + f1[:filename]
 
-					# Make the directory if not there, up to 4 levels
-					4.downto(0) { |i|
+					# Make the directory if not there, up to ~15 levels
+					15.downto(0) { |i|
 						fold = stripFolder(dest_str, i)
 						begin
 							sftp1.mkdir!(fold)
 						rescue Net::SFTP::StatusException	
-							# No problem, folder probably wasn't already there
+							# No problem, folder probably was already there or down to nothing
 						end
 					}
 
