@@ -126,6 +126,7 @@ module MediaSafe
 			fList = [fPath]
 		else
 			# Otherwise it's a folder, list all files recursively inside it
+			# puts ' listing ' + fPathStd + '/**/*'
 			fList = Dir.glob(fPathStd + '/**/*')
 			# Remove anything that is itself a folder
 			fList.reject! { |x| File.directory?(x) }
@@ -202,7 +203,7 @@ class MediaBackup
 			# Rethink warning handling later? For now let create empty			
 		elsif(args.key?(:saved))
 			# Load from the saved TSV
-			loadFromTSV(args[:saved], false)
+			loadFromTSV(args[:saved])
 		elsif(args.key?(:generate))
 			@basePath = Dir.pwd
 			if(args[:bp] != nil)

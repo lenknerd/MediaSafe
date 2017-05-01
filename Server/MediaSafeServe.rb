@@ -75,6 +75,11 @@ class MediaSafeSinatra < Sinatra::Base
 		return @@archTSV
 	end
 
+	# Write accessor for class variable archTSV
+	def self.archTSV=(bd)
+		@@archTSV = bd
+	end
+
 	# Set production mode
 	def self.setProductionMode()
 		set :environment, :production
@@ -125,7 +130,8 @@ class MediaSafeSinatra < Sinatra::Base
 
 		mb_clie.infoList.each { |el|
 			if(el[:action] == MFileAction::SAFE_SENT)
-			archiveFile.puts infoListItemLine(el)
+				archiveFile.puts infoListItemLine(el)
+			end
 		}
 
 		archiveFile.close

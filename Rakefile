@@ -32,10 +32,11 @@ task :test_server_calls => [:load_shared, :load_server, :test_utils] do
 end
 
 # Basic test settings
-task :test_utils do
+task :test_utils => [:load_server] do
 	ENV['RACK_ENV'] = 'test'
 	require 'minitest/autorun'
 	require 'rack/test'
+	MediaSafeSinatra.archTSV = 'Test_Archive.tsv'
 end
 
 # Run the server
@@ -49,7 +50,18 @@ end
 
 # Set up the initial archive of the server repository (so not to
 # re-run all first call)
-task :init_archive => [:load_shared] do
+task :init_archive => [:load_shared, :load_server] do
 	mb = MediaBackup.new({:generate => backupDir, :bp => backupDir})
 	mb.saveToTSV(MediaSafeSinatra.archTSV)
 end
+
+# Set up the initial archive of the server repository (so not to
+# re-run all first call) for test repo
+task :init_test_archive => [:load_shared, :load_server] do
+	MediaSafeSinatra.archTSV = 'Test_Archive.tsv'
+	mb = MediaBackup.new({
+		:generate => Dir.pwd + '/Test/TestServerFolder/',
+		:bp => Dir.pwd
+	})
+	mb.saveToTSV(MediaSafeSinatra.archTSV)
+end	
