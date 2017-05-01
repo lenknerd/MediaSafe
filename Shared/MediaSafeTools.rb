@@ -202,7 +202,7 @@ class MediaBackup
 			# Rethink warning handling later? For now let create empty			
 		elsif(args.key?(:saved))
 			# Load from the saved TSV
-			loadFromTSV(args[:saved])
+			loadFromTSV(args[:saved], false)
 		elsif(args.key?(:generate))
 			@basePath = Dir.pwd
 			if(args[:bp] != nil)
@@ -222,16 +222,21 @@ class MediaBackup
 		open(tsvPath, 'w') { |f|
 			f.puts @basePath
 			@infoList.each { |el|
-				f.puts [
-					MFileStatus.to_str(el[:status]),
-					MFileAction.to_str(el[:action]),
-					el[:filename],
-					el[:path],
-					el[:size].to_s,
-					el[:checksum]
-				].join("\t")
+				f.puts infoListItemLine(el)
 			}
 		}
+	end
+
+	# Get one line for one element of the file info list to the tsv file
+	def infoListItemLine(el)
+		return [
+			MFileStatus.to_str(el[:status]),
+			MFileAction.to_str(el[:action]),
+			el[:filename],
+			el[:path],
+			el[:size].to_s,
+			el[:checksum]
+		].join("\t")
 	end
 
 	# Comparator - mainly for testing
@@ -287,28 +292,29 @@ class MediaBackup
 		}
 	end
 
-	private
-
-		# Load a MediaBackup session status from saved tsv
-		def loadFromTSV(tsvPath)
-			File.open(tsvPath, "r") do |f|
-				# First line is where we ran this from, don't really need...
-				@basePath = f.readline.strip
-				# Rest of lines are info list
-				while(line = f.gets) != nil
-					lineEls = line.strip.split("\t")
-					@infoList.push({
-						:status => MFileStatus.fr_str(lineEls[0]),
-						:action => MFileAction.fr_str(lineEls[1]),
-						:filename => lineEls[2],
-						:path => lineEls[3],
-						:size => lineEls[4].to_i,
-						:checksum => lineEls[5]
-					})
-				end
+	# Load a MediaBackup session status from saved tsv
+	# Note you can run this after already init'd, will just append
+	# more items on
+	def loadFromTSV(tsvPath)
+		File.open(tsvPath, "r") do |f|
+			# First line is where we ran this from, don't really need...
+			@basePath = f.readline.strip
+			# Rest of lines are info list
+			while(line = f.gets) != nil
+				lineEls = line.strip.split("\t")
+				@infoList.push({
+					:status => MFileStatus.fr_str(lineEls[0]),
+					:action => MFileAction.fr_str(lineEls[1]),
+					:filename => lineEls[2],
+					:path => lineEls[3],
+					:size => lineEls[4].to_i,
+					:checksum => lineEls[5]
+				})
 			end
 		end
+	end
 
+	private
 		# Set up a new FileList item with unknown status, undecided action
 		def self.addStatusAction(fileInfo)
 			fileInfo[:status] = MFileStatus::UNKNOWN

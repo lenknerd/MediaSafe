@@ -185,6 +185,15 @@ class MediaSafeClientSession
 			}
 		end
 		Kernel.allow_warnings
+
+		# Okay. Finally, for any ones that we did successfully back up, report
+		@server_url += ':5673'
+		response = RestClient.post @server_url + '/log_safe',
+			mb.to_json(),
+			:content_type => :json,
+			:accept => :json
+
+		# Later, put in check on response
 	end
 
 end

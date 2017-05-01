@@ -4,6 +4,10 @@
 # David Lenkner, 2017
 
 
+# Change this if you want to server from different folder
+backupDir = '/media/david/BUNSEN/mesa'
+
+
 # Run all tests - shared tools, server calls
 task :default => [:sharedonly_tests, :test_server_calls]
 
@@ -38,10 +42,14 @@ end
 task :run_server => [:load_shared, :load_server] do
 	puts 'Running the server...'
 
-	# Change this if you want to server from different folder
-	backupDir = '/media/david/BUNSEN/mesa'
-
 	MediaSafeSinatra.basedir = backupDir
 	MediaSafeSinatra.setProductionMode()
 	MediaSafeSinatra.run!
+end
+
+# Set up the initial archive of the server repository (so not to
+# re-run all first call)
+task :init_archive => [:load_shared] do
+	mb = MediaBackup.new({:generate => backupDir, :bp => backupDir})
+	mb.saveToTSV(MediaSafeSinatra.archTSV)
 end

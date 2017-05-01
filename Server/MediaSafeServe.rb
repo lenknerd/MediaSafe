@@ -49,8 +49,11 @@ class MediaSafeSinatra < Sinatra::Base
 
 
 	@@basedir = '/SERVER_BASEDIR_NOT_SET/'
+	@@archTSV = 'Archive.tsv'
 
 	set :port, 5673 # My router doesn't allow default 4567 fwd.. just picked unused nearby
+
+	set :server, 'webrick' # Try using this - thin or webrick seems to work
 
 	# http://stackoverflow.com/questions/16832472/
 	# ruby-sinatra-webservice-running-on-localhost4567-but-not-on-ip
@@ -67,6 +70,11 @@ class MediaSafeSinatra < Sinatra::Base
 		return @@basedir
 	end
 
+	# Read accessor for class variable archTSV
+	def self.archTSV()
+		return @@archTSV
+	end
+
 	# Set production mode
 	def self.setProductionMode()
 		set :environment, :production
@@ -78,8 +86,10 @@ class MediaSafeSinatra < Sinatra::Base
 		# concurrent use... just get contents, modify user's object,
 		# send it back as JSON response with object statuses.
 		
-		# First get the MediaBackup object for our storage folder
-		mb_serv = MediaBackup.new({:generate => @@basedir, :bp => @@basedir})
+		# First get the MediaBackup object for our storage archive tsv
+		mb_serv = MediaBackup.new()
+		mb_serv.loadFromTSV(@@archTSV)
+		# mb_serv = MediaBackup.new({:generate => @@basedir, :bp => @@basedir})
 
 		# Now parse out the one sent from our client
 		mb_clie = MediaBackup.new()
@@ -103,6 +113,24 @@ class MediaSafeSinatra < Sinatra::Base
 	get '/' do
 		# Note, don't change the text here w/o changing unit test...
 		'Test call succeeded, media safe is running! Hooray!'
+	end
+
+	# Parse out the backup list from client after backed up, record done
+	post '/log_safe' do
+		# Now parse out the one sent from our client
+		mb_clie = MediaBackup.new()
+		mb_clie.from_json(request.body.read)
+
+		archiveFile = File.open(@@archTSV, 'a+')
+
+		mb_clie.infoList.each { |el|
+			if(el[:action] == MFileAction::SAFE_SENT)
+			archiveFile.puts infoListItemLine(el)
+		}
+
+		archiveFile.close
+
+		return 'MediaSafeServerROGERTHAT'
 	end
 
 end
