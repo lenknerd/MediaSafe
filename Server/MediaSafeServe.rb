@@ -4,7 +4,9 @@
 # David Lenkner, 2017
 
 require 'sinatra/base'
+require 'webrick'
 require 'json'
+require 'logger'
 
 
 # Get status of client file on server given server info list
@@ -31,6 +33,21 @@ end
 # Class for the Sinatra server of MediaSafe
 class MediaSafeSinatra < Sinatra::Base
 
+
+	# Enable logging to a access log and error log one dir up from here in log folder
+	::Logger.class_eval { alias :write :'<<' }
+	access_log = ::File.join(::File.dirname(::File.expand_path(__FILE__)),'..','log','access.log')
+	access_logger = ::Logger.new(access_log)
+	error_logger = ::File.new(::File.join(::File.dirname(::File.expand_path(__FILE__)),'..','log','error.log'),"a+")
+	error_logger.sync = true	 
+	configure do
+		use ::Rack::CommonLogger, access_logger
+	end	   
+	before {
+		env["rack.errors"] =  error_logger
+	}
+
+
 	@@basedir = '/SERVER_BASEDIR_NOT_SET/'
 
 	set :port, 5673 # My router doesn't allow default 4567 fwd.. just picked unused nearby
@@ -48,6 +65,11 @@ class MediaSafeSinatra < Sinatra::Base
 	# Read accessor for class variable basedir
 	def self.basedir()
 		return @@basedir
+	end
+
+	# Set production mode
+	def self.setProductionMode()
+		set :environment, :production
 	end
 
 	# The core request route - client asks for status of some files

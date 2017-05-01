@@ -17,6 +17,7 @@ Thanks to the creators of these;
 * [Slop](https://github.com/leejarvis/slop) for command-line argument parsing in client script
 * [net-sftp](https://github.com/net-ssh/net-sftp)
 * [json](https://rubygems.org/gems/json/versions/1.8.3)
+* [logger]()
 
 
 ## Features

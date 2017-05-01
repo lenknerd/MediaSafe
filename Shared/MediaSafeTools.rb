@@ -135,6 +135,12 @@ module MediaSafe
 		infoList = fList.map { |f|
 			getInfoListItemFromF(f, baseD)
 		}
+		
+		# Don't allow empty files - not only should you not have to back these up,
+		# but doesn't play nice with the Windows certUtil command, just drop them...
+		infoList.reject! { |el|
+			el[:size] == 0
+		}
 
 		return infoList
 	end

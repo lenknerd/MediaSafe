@@ -42,5 +42,6 @@ task :run_server => [:load_shared, :load_server] do
 	backupDir = '/media/david/BUNSEN/mesa'
 
 	MediaSafeSinatra.basedir = backupDir
+	MediaSafeSinatra.setProductionMode()
 	MediaSafeSinatra.run!
 end
