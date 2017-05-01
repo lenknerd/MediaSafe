@@ -74,5 +74,11 @@ class TestServerCalls < MiniTest::Test
 				assert_equal MFileStatus::SAFE, finfo[:status]
 			end
 		}
+
+		# Test telling it hey we backed something up
+		post '/log_safe', b.to_json()
+
+		# Later, put in check on response
+		assert(last_response.include?('ROGER'), 'log_safe ran')
 	end
 end

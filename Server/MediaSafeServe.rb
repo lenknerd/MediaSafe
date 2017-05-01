@@ -129,7 +129,7 @@ class MediaSafeSinatra < Sinatra::Base
 		archiveFile = File.open(@@archTSV, 'a+')
 
 		mb_clie.infoList.each { |el|
-			if(el[:action] == MFileAction::SAFE_SENT)
+			if(el[:action] == MFileAction::SENT_KEPT)
 				archiveFile.puts infoListItemLine(el)
 			end
 		}

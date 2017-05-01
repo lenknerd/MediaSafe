@@ -194,6 +194,9 @@ class MediaSafeClientSession
 			:accept => :json
 
 		# Later, put in check on response
+		if(!response.include?('ROGER'))
+			puts 'WARNIN!! Heads up, did not get response from server!'
+		end
 	end
 
 end
