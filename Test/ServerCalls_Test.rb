@@ -79,6 +79,6 @@ class TestServerCalls < MiniTest::Test
 		post '/log_safe', b.to_json()
 
 		# Later, put in check on response
-		assert(last_response.include?('ROGER'), 'log_safe ran')
+		assert(last_response.ok?, 'Response received from log_safe.')
 	end
 end

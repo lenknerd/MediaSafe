@@ -130,13 +130,13 @@ class MediaSafeSinatra < Sinatra::Base
 
 		mb_clie.infoList.each { |el|
 			if(el[:action] == MFileAction::SENT_KEPT)
-				archiveFile.puts infoListItemLine(el)
+				archiveFile.puts mb_clie.infoListItemLine(el)
 			end
 		}
 
 		archiveFile.close
 
-		return 'MediaSafeServerROGERTHAT'
+		return '{"success" : "ROGER"}'
 	end
 
 end

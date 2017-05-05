@@ -83,26 +83,20 @@ module MediaSafe
 
 	# Info on a particular file in standard hash, f being file and folder path
 	# in format ./SomePathWhere/WillBeBackedup/Filename.txt
+	# Note... f and baseD are expected to be fully expanded to avoid ., ~, etc
 	def MediaSafe.getInfoListItemFromF(f, baseD)
 		# Need to figure out path just from baseD up to file
-		# f may include relative path from Dir.pwd or may be all... so...
-		if(f[0] != '/' || f[0] != '\\') # Note this fails on ~ but whatever...
-			# if relative, add on pwd, compare to base path
-			fFull = Dir.pwd + '/' + f
-			relPathAndFile = fFull.gsub(baseD,'')
-		else
-			# if not relative, just go ahead and cut out baseD
-			relPathAndFile = fFull.gsub(baseD,'')
-		end
-		# Let's standardize that relPath shouldn't start with a '/' (or '\' win)
-		relPathAndFile.gsub!(/^\//,'')
-		relPathAndFile.gsub!(/^\\/,'')
-		# Then cut out the filename itself from that relative path and file for just path...
-		relPath = relPathAndFile.gsub(File.basename(f),'')	
+		# Also note we cut off the first element after subbing out baseD
+		# in order to not include the separator at the start /subfolder/f.abc
+		relPathAndFile = f.gsub(baseD,'')[1..-1]
+		
+		# Then split that into the filename and relative path without filename
+		fname = File.basename(relPathAndFile)
+		relPath = relPathAndFile.gsub(fname,'')
 
 		return {
-			:filename => File.basename(f),
-			:path => relPath, # Path from base dir to f #####
+			:filename => fname,
+			:path => relPath,
 			:size => File.size(f),
 			:checksum => MediaSafe.getMD5(f)
 		}
@@ -110,35 +104,34 @@ module MediaSafe
 
 	# Create a hash of info from a single file to be backed up.  Info includes
 	#  :filename - just the filename, no path, no './'
-	#  :rel_path - relative path from place where backup script was run (baseDir arg)
-	#              also will be rel path where stored, in rel to storage root
+	#  :rel_path - relative path from baseD to file
 	#  :checksum - md5 checksum result, as string (no whitespace)
-	def MediaSafe.getFileInfo(fPath, baseD)
-		# Cut off a "./" or "./" if that is at the beginning of the path
-		fPathTmp = fPath.gsub(/^\.\//,'').gsub(/^\.\\/,'')
-		# And cut off a "\" or "/" if that ends the path
-		fPathTmp2 = fPathTmp.gsub(/\\$/,'').gsub(/\/$/,'')
-		# And replace any multiple /// or \\ etc.
-		fPathStd = fPathTmp2.gsub(/([\\\/])\1+/,"\\1")
+	def MediaSafe.getFileInfo(fileOrDir, baseD)
+		# Fully expand both baseD and fPath before using above (standardize
+		# to avoid ./ or ~/, also avoid double // and things)
+		fileOrDirStd = File.expand_path(fileOrDir)
+		baseStd = File.expand_path(baseD)
 
 		# If fPath is a file, that constitutes our list
-		if(File.file?(fPathStd))
-			fList = [fPath]
+		if(File.file?(fileOrDirStd))
+			fList = [fileOrDirStd]
 		else
 			# Otherwise it's a folder, list all files recursively inside it
 			# puts ' listing ' + fPathStd + '/**/*'
-			fList = Dir.glob(fPathStd + '/**/*')
+			fList = Dir.glob(fileOrDirStd + '/**/*').map { |el|
+				File.expand_path(el)
+			}
 			# Remove anything that is itself a folder
 			fList.reject! { |x| File.directory?(x) }
 		end
 
-		# For each file, get it's size, md5sum, etc, figure out path relative to baseDir
+		# For each file, get its info (md5sum, etc)
 		infoList = fList.map { |f|
 			getInfoListItemFromF(f, baseD)
 		}
 		
-		# Don't allow empty files - not only should you not have to back these up,
-		# but doesn't play nice with the Windows certUtil command, just drop them...
+		# Don't allow empty files - you not have to back these up,
+		# also doesn't play nice with the Windows certUtil md5sum
 		infoList.reject! { |el|
 			el[:size] == 0
 		}
@@ -146,7 +139,7 @@ module MediaSafe
 		return infoList
 	end
 
-end
+end # End MediaSafe module
 
 
 # An enum for what has happened to a file
@@ -197,6 +190,10 @@ class MediaBackup
 	attr_accessor :infoList, # The real info on all the files
 		:basePath # Just in case you need it, the abs path from which gen'd
 
+	# Three possible construction tracks;
+	# - give it path ot a saved tsv from which to be loaded from (:saved =>)
+	# - give it :generate = > from file/folder and :basedir => base
+	# - give it nothing, can use this during testing, set members later
 	def initialize(args = nil)
 		@infoList = []
 		if(args == nil)

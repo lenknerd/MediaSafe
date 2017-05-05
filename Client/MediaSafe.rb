@@ -187,6 +187,7 @@ class MediaSafeClientSession
 		Kernel.allow_warnings
 
 		# Okay. Finally, for any ones that we did successfully back up, report
+		mb.infoList.reject! { |el| el[:action] != MFileAction::SENT_KEPT }
 		@server_url += ':5673'
 		response = RestClient.post @server_url + '/log_safe',
 			mb.to_json(),
