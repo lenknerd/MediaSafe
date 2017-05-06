@@ -25,7 +25,10 @@ class TestServerCalls < MiniTest::Test
 	# Test checking status where everything is there
 	def test_allBackedUp()
 		# Create a MediaBackup to send over
-		b = MediaBackup.new({:generate => './Test/TestDataFolder'})
+		b = MediaBackup.new({
+			:generate => './Test/TestDataFolder',
+			:bp => Dir.pwd
+		})
 		
 		post '/query', b.to_json()
 
@@ -36,13 +39,11 @@ class TestServerCalls < MiniTest::Test
 		server_b.from_json(last_response.body)
 		
 		server_b.infoList.each { |finfo|
-			assert_equal MFileStatus::SAFE, finfo[:status] 
+			assert_equal MFileStatus::SAFE, finfo[:status]
 		}
 		assert_equal Dir.pwd, server_b.basePath
-	end
 
-	# Test checking status when some things are NOT yet backed up
-	def test_oneYetToBackup()
+		# Now test checking status when some things are NOT yet backed up
 		# Add a file temporarily in the test data dir
 		newfilename = 'newfile.txt'
 		backupfolder = './Test/TestDataFolder/'
@@ -53,7 +54,10 @@ class TestServerCalls < MiniTest::Test
 		sleep 0.1
 
 		# Now create the "client" MediaBackup object
-		b = MediaBackup.new({:generate => backupfolder})
+		b = MediaBackup.new({
+			:generate => backupfolder,
+			:bp => Dir.pwd
+		})
 
 		# Now remove the file so the server won't see it
 		File.delete(backupfolder + newfilename)
@@ -80,5 +84,6 @@ class TestServerCalls < MiniTest::Test
 
 		# Later, put in check on response
 		assert(last_response.ok?, 'Response received from log_safe.')
+		assert(last_response.body.include?('ROGER'))
 	end
 end

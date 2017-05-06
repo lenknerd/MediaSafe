@@ -80,14 +80,13 @@ end
 # Tests for the bulk of the client module
 class TestMediaBackup < MiniTest::Test
 	def setup
-		@listing = MediaBackup.new({:generate => './Test/TestDataFolder'})
-
-		fullPathToServDir = Dir.pwd + '/Test/TestDataFolder'
-		@listing_wbase = MediaBackup.new({:generate => './Test/TestDataFolder',
-									:bp => fullPathToServDir})
+		@listing = MediaBackup.new({
+			:generate => './Test/TestDataFolder',
+			:bp => Dir.pwd
+		})
 
 		@expec_listing = MediaBackup.new()
-		@expec_listing.basePath = '/home/david/SFiles/Projects/MediaSafe/Repo'
+		@expec_listing.basePath = Dir.pwd
 		@expec_listing.infoList = [
 			{
 				:filename=>"AnotherTestFile.xyz",
@@ -115,8 +114,17 @@ class TestMediaBackup < MiniTest::Test
 			}
 		]
 
+
+		# Here is another test for if the generate path = base path
+		# as would be on server when backing up
+		fullPathToServDir = Dir.pwd + '/Test/TestDataFolder'
+		@listing_wbase = MediaBackup.new({
+			:generate => fullPathToServDir,
+			:bp => fullPathToServDir
+		})
+
 		@expec_listing_wbase = MediaBackup.new()
-		@expec_listing_wbase.basePath = '/home/david/SFiles/Projects/MediaSafe/Repo/Test/TestDataFolder'
+		@expec_listing_wbase.basePath = fullPathToServDir
 		@expec_listing_wbase.infoList = [
 			{
 				:filename=>"AnotherTestFile.xyz",

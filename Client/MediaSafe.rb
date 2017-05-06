@@ -89,8 +89,12 @@ class MediaSafeClientSession
 			outputFileName = @cli_args[:output]
 		end
 		puts "Getting status of: #{@cli_args[:status]}"
-		# See what files we're trying to back up and md5sum etc
-		mb = MediaBackup.new({:generate => @cli_args[:status]})
+		# See what files we're trying to back up and md5sum etc,
+		# using HERE as the base address (wherever running from)
+		mb = MediaBackup.new({
+			:generate => @cli_args[:status],
+			:bp => Dir.pwd
+		})
 
 		# Send that info to the server and parse response
 		if(@cli_args[:url] == nil)
@@ -154,7 +158,7 @@ class MediaSafeClientSession
 
 		# Connect to server for FTP's
 		Kernel.suppress_warnings
-		# Note, the empty password here will just cause it to ask for pw entry securely
+		# Note, the empty password here will cause it to ask for pw entry safely
 		Net::SFTP.start(@server_url, @cli_args[:username],
 					   :password => '') do |sftp1|
 
@@ -171,22 +175,21 @@ class MediaSafeClientSession
 						begin
 							sftp1.mkdir!(fold)
 						rescue Net::SFTP::StatusException	
-							# No problem, folder probably was already there or down to nothing
+							# No problem, folder probably was already there
 						end
 					}
 
-					# This does the transfer and outputs progress on it (nice for big files)
+					# This does the transfer and outputs progress on it
 					puts "Transferring #{src_str} to #{dest_str}"
 					sftp1.upload!(src_str, dest_str)
-
 				else
-					puts 'Skipping...'
+					puts 'Skipping file not slated for transfer.'
 				end
 			}
 		end
 		Kernel.allow_warnings
 
-		# Okay. Finally, for any ones that we did successfully back up, report
+		# Okay. Finally, for files that we did successfully back up, record them
 		mb.infoList.reject! { |el| el[:action] != MFileAction::SENT_KEPT }
 		@server_url += ':5673'
 		response = RestClient.post @server_url + '/log_safe',
@@ -194,9 +197,9 @@ class MediaSafeClientSession
 			:content_type => :json,
 			:accept => :json
 
-		# Later, put in check on response
+		# Consider error handle here
 		if(!response.include?('ROGER'))
-			puts 'WARNIN!! Heads up, did not get response from server!'
+			puts 'WARNING!! Heads up, did not get response from server!'
 		end
 	end
 

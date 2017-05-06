@@ -197,21 +197,22 @@ class MediaBackup
 	def initialize(args = nil)
 		@infoList = []
 		if(args == nil)
-			# Rethink warning handling later? For now let create empty			
+			# Creating a total
 		elsif(args.key?(:saved))
 			# Load from the saved TSV
 			loadFromTSV(args[:saved])
 		elsif(args.key?(:generate))
-			@basePath = Dir.pwd
-			if(args[:bp] != nil)
-				@basePath = args[:bp]
+			if(args[:bp] == nil)
+				puts 'ERROR! Base path now required for generation of backup.'
+				exit
 			end
+			@basePath = args[:bp]
 			# Generate from directory argument
 			@infoList = MediaSafe.getFileInfo(args[:generate], @basePath)
 			@infoList.map! { |x| MediaBackup.addStatusAction(x) }
-			
 		else
-			puts 'Error - something totally unexpected in MediaBackup.new args.'
+			puts 'ERROR! Something totally unexpected in MediaBackup.new args.'
+			exit
 		end
 	end
 
@@ -313,6 +314,7 @@ class MediaBackup
 	end
 
 	private
+
 		# Set up a new FileList item with unknown status, undecided action
 		def self.addStatusAction(fileInfo)
 			fileInfo[:status] = MFileStatus::UNKNOWN

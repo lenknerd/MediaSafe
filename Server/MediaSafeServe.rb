@@ -34,12 +34,14 @@ end
 class MediaSafeSinatra < Sinatra::Base
 
 
-	# Enable logging to a access log and error log one dir up from here in log folder
+	# Enable logging in customized way (log to ../log/ folder, .gitignore'd)
 	::Logger.class_eval { alias :write :'<<' }
-	access_log = ::File.join(::File.dirname(::File.expand_path(__FILE__)),'..','log','access.log')
+	access_log = ::File.join(::File.dirname(::File.expand_path(__FILE__)),
+							 '..','log','access.log')
 	access_logger = ::Logger.new(access_log)
-	error_logger = ::File.new(::File.join(::File.dirname(::File.expand_path(__FILE__)),'..','log','error.log'),"a+")
-	error_logger.sync = true	 
+	error_logger = ::File.new(::File.join(::File.dirname(
+		::File.expand_path(__FILE__)),'..','log','error.log'),"a+")
+	error_logger.sync = true
 	configure do
 		use ::Rack::CommonLogger, access_logger
 	end	   
@@ -47,13 +49,17 @@ class MediaSafeSinatra < Sinatra::Base
 		env["rack.errors"] =  error_logger
 	}
 
-
+	# Base directory from which relative paths go
 	@@basedir = '/SERVER_BASEDIR_NOT_SET/'
+
+	# Archive file where saving file list and md5sums etc on server
 	@@archTSV = 'Archive.tsv'
 
-	set :port, 5673 # My router doesn't allow default 4567 fwd.. just picked unused nearby
+	# My router doesn't allow default 4567 fwd...
+	set :port, 5673 
 
-	set :server, 'webrick' # Try using this - thin or webrick seems to work
+	# Try using this - thin or webrick seems to work
+	set :server, 'webrick' 
 
 	# http://stackoverflow.com/questions/16832472/
 	# ruby-sinatra-webservice-running-on-localhost4567-but-not-on-ip
@@ -92,9 +98,7 @@ class MediaSafeSinatra < Sinatra::Base
 		# send it back as JSON response with object statuses.
 		
 		# First get the MediaBackup object for our storage archive tsv
-		mb_serv = MediaBackup.new()
-		mb_serv.loadFromTSV(@@archTSV)
-		# mb_serv = MediaBackup.new({:generate => @@basedir, :bp => @@basedir})
+		mb_serv = MediaBackup.new({:saved => @@archTSV})
 
 		# Now parse out the one sent from our client
 		mb_clie = MediaBackup.new()
@@ -129,7 +133,8 @@ class MediaSafeSinatra < Sinatra::Base
 		archiveFile = File.open(@@archTSV, 'a+')
 
 		mb_clie.infoList.each { |el|
-			if(el[:action] == MFileAction::SENT_KEPT)
+			if(el[:action] == MFileAction::SENT_KEPT || el[:action] ==
+			  MFileAction::SENT_DELD)
 				archiveFile.puts mb_clie.infoListItemLine(el)
 			end
 		}
