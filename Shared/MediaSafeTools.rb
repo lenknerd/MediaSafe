@@ -127,7 +127,7 @@ module MediaSafe
 
 		# For each file, get its info (md5sum, etc)
 		infoList = fList.map { |f|
-			getInfoListItemFromF(f, baseD)
+			getInfoListItemFromF(f, baseStd)
 		}
 		
 		# Don't allow empty files - you not have to back these up,
