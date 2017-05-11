@@ -5,8 +5,7 @@
 
 
 # Run all tests is the default task
-task :default => [:sharedonly_tests, :test_server_calls]
-
+task :default => [:unit_tests]
 
 # Loads shared utilities
 task :load_shared do
@@ -19,17 +18,11 @@ task :load_server do
 end
 
 
-
 # ----- TASKS FOR TESTING ----- #
 
 # Runs test on just the shared utils, doesn't require server running
-task :sharedonly_tests => [:load_shared, :test_utils] do
-	require './Test/SharedOnly_Test.rb'
-end
-
-# Test client accessing the test server
-task :test_server_calls => [:load_shared, :load_server, :test_utils] do
-	require './Test/ServerCalls_Test.rb'
+task :unit_tests => [:load_shared, :load_server, :test_utils] do
+	require './Test/UnitTests.rb'
 end
 
 # Basic testing setup stuff
@@ -41,6 +34,7 @@ task :test_utils => [:load_server, :load_shared] do
 
 	# Set up the initial archive of the server repository (so not to
 	# re-run all first call) for test repo, if not there already
+	# Required for rack calls to sinatra server
 	if(!File.exists?(MediaSafeSinatra.archTSV))
 		mb = MediaBackup.new({
 			:generate => Dir.pwd + '/Test/TestServerFolder/',

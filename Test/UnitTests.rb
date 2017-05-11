@@ -1,6 +1,6 @@
-# SharedOnly_Test.rb
+# UnitTests.rb
 # Test functions for shared utilities on both client and server
-# Does not require either of those to be running, only this
+# Does not require server to be running, uses rack
 #
 # David Lenkner, 2017
 
@@ -31,8 +31,10 @@ class TestMFileStatus < MiniTest::Test
 
 end
 
-# Bulk of testing here - all the shared utilities
-class TestMediaSafeSharedUtils < MiniTest::Test
+# Bulk of testing here - all the shared utilities and server
+# Test the MD5Sum utility
+class TestMD5Sum < MiniTest::Test 
+
 	def test_md5sum
 		filesToCheck = [
 		   './Test/TestDataFolder/TestFile.txt',
@@ -77,9 +79,17 @@ class TestMFileAction < MiniTest::Test
 end
 
 
-# Tests for the bulk of the client module
-class TestMediaBackup < MiniTest::Test
-	def setup
+# Tests for the bulk of the code
+class TestMediaSafe < MiniTest::Test
+
+	include Rack::Test::Methods
+
+	def app
+		MediaSafeSinatra
+	end
+
+	# Test everything... break up later as per order not mattering
+	def test_mb
 		@listing = MediaBackup.new({
 			:generate => './Test/TestDataFolder',
 			:bp => Dir.pwd
@@ -113,6 +123,8 @@ class TestMediaBackup < MiniTest::Test
 				:action=>0
 			}
 		]
+
+		assert_equal(@listing, @expec_listing, 'First listing in mbtest')
 
 
 		# Here is another test for if the generate path = base path
@@ -152,20 +164,8 @@ class TestMediaBackup < MiniTest::Test
 			}
 		]
 
-	end
+		assert_equal(@listing_wbase, @expec_listing_wbase, 'Listing w base')
 
-	# The two created in the setup should be equal
-	def test_list1
-		assert_equal @listing, @expec_listing
-	end
-
-	# Test the two created with base path specified
-	def test_list2
-		assert_equal @listing_wbase, @expec_listing_wbase
-	end
-
-	# Try writing to tsv and reading from that, check that equal
-	def test_writeRead
 		temp_f = './Test/Temporary_Saved_MediaBackupForTest.tsv'
 		@listing.saveToTSV(temp_f)
 
@@ -174,6 +174,76 @@ class TestMediaBackup < MiniTest::Test
 		assert_equal @listing, readback_list
 
 		File.delete(temp_f)
+
+		# Try some calls to MediaSafeServer
+	
+		# Test that I can do a simple get to '/'
+		get '/'
+		assert last_response.ok?
+		assert(last_response.body.include?('Hooray'), 'Basic get test')
+
+		# Create a MediaBackup to send over
+		b = MediaBackup.new({
+			:generate => './Test/TestDataFolder',
+			:bp => Dir.pwd
+		})
+		
+		post '/query', b.to_json()
+
+		assert last_response.ok?
+
+		# Okay it should have responded with JSON for the server statuses
+		server_b = MediaBackup.new()
+		server_b.from_json(last_response.body)
+		
+		server_b.infoList.each { |finfo|
+			assert_equal MFileStatus::SAFE, finfo[:status]
+		}
+		assert_equal Dir.pwd, server_b.basePath
+
+		# Now test checking status when some things are NOT yet backed up
+		# Add a file temporarily in the test data dir
+		newfilename = 'newfile.txt'
+		backupfolder = './Test/TestDataFolder/'
+		sleep 1
+		fnew = File.new(backupfolder + newfilename,'w')
+		fnew.puts 'This file is new and not yet be backed up.'
+		fnew.close
+		sleep 1
+
+		# Now create the "client" MediaBackup object
+		b = MediaBackup.new({
+			:generate => backupfolder,
+			:bp => Dir.pwd
+		})
+
+		# Now remove the file so the server won't see it
+		File.delete(backupfolder + newfilename)
+		sleep 0.1
+
+		# And ask the server status on files
+		post '/query', b.to_json()
+
+		assert last_response.ok?
+		server_b = MediaBackup.new()
+		server_b.from_json(last_response.body)
+
+		# So, status-wise, all should be safe except the one not present	
+		server_b.infoList.each { |finfo|
+			if(finfo[:filename] == newfilename)
+				assert_equal MFileStatus::NOT_PRESENT, finfo[:status]
+			else
+				assert_equal MFileStatus::SAFE, finfo[:status]
+			end
+		}
+
+		# Test telling it hey we backed something up
+		post '/log_safe', b.to_json()
+
+		# Later, put in check on response
+		assert(last_response.ok?, 'Response received from log_safe.')
+		assert(last_response.body.include?('ROGER'))
 	end
+
 end
 
